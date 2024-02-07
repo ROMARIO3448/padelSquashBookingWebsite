@@ -1,0 +1,45 @@
+.footer-template {
+    width: 100vw;
+    z-index: 40;
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 4em;
+    line-height: 2em;
+}
+
+.footer-template__contacts {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    margin-left: 1em;
+}
+
+.footer-template__contacts a {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5em;
+}
+
+.footer-template__contacts a img {
+    height: 0.8em;
+}
+
+/* Laptops and Desktops - 992px and above */
+@media (min-width: 992px) {
+    .footer-template__contacts a img {
+        height: 1em;
+    }
+    .footer-template {
+        height: 3em;
+        line-height: 1.5em;
+    }
+    .footer-template__contacts {
+        font-size: 0.8em;
+    }
+}

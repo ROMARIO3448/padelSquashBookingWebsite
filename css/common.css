@@ -1,0 +1,57 @@
+:root {
+    --default-font-size-in-vw: 6vw;
+    --tablet-font-size-in-vw: 5vw;
+    --small-laptops-and-tablets-font-size-in-vw: 4vw;
+    --laptops-and-desktops-font-size-in-vw: 3vw;
+    --large-screens-font-size-in-vw: 2vw;
+    --main-bg-color: #f85c78;
+    --main-text-color: #fff;
+    --container-padding-default: 4vw;
+}
+
+/* Default font-size for mobile devices */
+body {
+    font-size: var(--default-font-size-in-vw);
+}
+
+/* Tablet Styles - 600px and above */
+@media (min-width: 600px) {
+    body {
+        font-size: var(--tablet-font-size-in-vw);
+    }
+}
+
+/* Small Laptops and Tablets - 768px and above */
+@media (min-width: 768px) {
+    body {
+        font-size: var(--small-laptops-and-tablets-font-size-in-vw);
+    }
+}
+
+/* Laptops and Desktops - 992px and above */
+@media (min-width: 992px) {
+    body {
+        font-size: var(--laptops-and-desktops-font-size-in-vw);
+    }
+}
+
+/* Large Screens - 1200px and above */
+@media (min-width: 1200px) {
+    body {
+        font-size: var(--large-screens-font-size-in-vw);
+    }
+}
+
+.wrapper {
+    min-height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+._container {
+    margin: 0 auto;
+    width: 80%;
+    padding-left: var(--container-padding-default);
+    padding-right: var(--container-padding-default);
+}

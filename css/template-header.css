@@ -1,0 +1,129 @@
+.header-template {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 50;
+
+    background-color: var(--main-bg-color);
+    color: var(--main-text-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 2em;
+    line-height: 2em;
+}
+
+.header-template__logo {
+    display: flex;
+    margin-left: 1em;
+}
+
+.header-template__logo img {
+    height: 2em;
+    transform: rotate(-50deg);
+}
+
+.header-template__menu {
+    display: none;
+}
+
+.header-template__menu ul {
+    display: flex;
+    flex-direction: column;
+}
+
+/*.current is the style that will be applied to the elements of 
+.header-template__menu ul if the URI matches the href of the link*/
+.menu__home.current,
+.menu__courts.current,
+.menu__about-us.current,
+.menu__contact.current {
+    color: red;
+}
+
+.header-template__actions {
+    display: none;
+    margin-right: 1em;
+}
+
+.header-template__actions ul {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-template__burger {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: center;
+    width: 1.5em;
+    height: 1em;
+    margin-right: 1em;
+}
+
+.header-template__burger span {
+    background-color: #fff;
+    height: 0.15em;
+    width: 1.5em;
+}
+
+/*.active is the style that will be applied when the burger menu is clicked 
+if the screen size is not wider than 992 pixels*/
+.header-template.active {
+    height: 100vh;
+}
+.header-template__logo.active {
+    display: none;
+}
+.header-template__burger.active {
+    align-self: start;
+}
+.header-template__burger.active span:nth-child(2) {
+    opacity: 0;
+}
+.header-template__burger.active span:nth-child(1) {
+    transform: rotate(-45deg);
+    margin-top: 0.9em;
+}
+.header-template__burger.active span:nth-child(3) {
+    transform: rotate(45deg);
+    margin-top: -0.9em;
+}
+.header-template__menu.active {
+    display: block;
+    margin-left: 1em;
+}
+.header-template__actions.active {
+    display: block;
+    margin-right: 0;
+}
+
+/* Laptops and Desktops - 992px and above */
+@media (min-width: 992px) {
+    .header-template__menu {
+        display: block;
+    }
+    .header-template__menu ul {
+        flex-direction: row;
+        gap: 1em;
+    }
+    .menu__home.current,
+    .menu__courts.current,
+    .menu__about-us.current,
+    .menu__contact.current {
+        color: #fff;
+        box-shadow: inset 0 0.2em 0 white;
+    }
+    .header-template__actions {
+        display: block;
+    }
+    .header-template__actions ul {
+        flex-direction: row;
+        gap: 1em;
+    }
+    .header-template__burger {
+        display: none;
+    }
+}
