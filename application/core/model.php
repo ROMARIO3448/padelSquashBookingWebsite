@@ -10,6 +10,11 @@ class Model
         }
         return self::$client;
     }
+
+    protected static function getSportcentrumUsersCollection()
+    {
+        return self::getClient()->sportcentrum->sportcentrumusers;
+    }
     
     public function get_data($options)
     {
