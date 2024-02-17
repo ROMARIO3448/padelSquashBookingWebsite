@@ -10,6 +10,15 @@
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/DesktopGallerySlider.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/squash-booking.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/timetable.js"></script>
+
+        <!-- jQuery UI -->
+        <link
+            rel="stylesheet"
+            href="/padelSquashBookingWebsite/css/jquery-ui.min.css"
+        />
+        <script defer src="/padelSquashBookingWebsite/scripts/jquery-ui.min.js"></script>
+        <!-- end jQuery UI -->
+        
         <title>Squash Booking</title>
     </head>
     <body>
@@ -39,7 +48,7 @@
                                 <div>Klass Jan's squash cort adress</div>
                             </a>
                             <a
-                                href="#main__opening-time"
+                                href="#timetable__schedule"
                                 class="control__opening-time"
                             >
                                 <img
@@ -154,19 +163,29 @@
                 </div>
                 <div class="main__timetable timetable">
                     <div class="timetable__container _container">
-                        <ul class="timetable__opening-hours">
+                        <div id="timetable__schedule" class="timetable__opening-hours">
                             
-                        </ul>
+                        </div>
                     </div>
                 </div>
-                <div
-                    id="main__reviews"
-                    class="squash-booking__reviews review"
-                ></div>
-                <div
-                    id="squash-booking__google-geo"
-                    class="squash-booking__google-geo google-geo"
-                ></div>
+                <div class="main__reviews review">
+                    <div class="review__container _container">
+                    </div>
+                </div>
+                <div class="main__google-geo google-geo">
+                    <div class="google-geo__container _wide-container">
+                        <iframe 
+                            width="100%" 
+                            height="400" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            marginheight="0" 
+                            marginwidth="0" 
+                            src="https://www.openstreetmap.org/export/embed.html?bbox=-180,-90,180,90&amp;layer=mapnik">
+                        </iframe>
+                        <!--src="https://www.openstreetmap.org/search?query=Hoekseize%2022%2C%208711%20HR%20Workum"-->
+                    </div>
+                </div>
             </main>
             <?php require_once(__DIR__ . '/template_footer.php'); ?>
         </div>

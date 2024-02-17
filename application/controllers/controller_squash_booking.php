@@ -57,10 +57,16 @@ class Controller_Squash_Booking extends Controller
 		return $dataFromClient;
 	}
 
-	private function isRequestedDateFormatValid($dateFormat, $requestedDate): bool
+	private function isRequestedDateNotPastAndDateFormatValid($dateFormat, $requestedDate): bool
 	{
-		$dateTimeObject = DateTime::createFromFormat($dateFormat, $requestedDate);
-    	return $dateTimeObject !== false && $dateTimeObject->format('d/m/Y') === $requestedDate;
+		$currentDateObject = DateTime::createFromFormat($dateFormat, (new DateTime())->format($dateFormat));
+		$requestedDateObject = DateTime::createFromFormat($dateFormat, $requestedDate);
+		if ($requestedDateObject !== false) {
+			if ($requestedDateObject >= $currentDateObject) {
+				return $requestedDateObject->format($dateFormat) === $requestedDate;
+			}
+		}
+		return false;
 	}
 
 	private function isDeviceStringValid($deviceString): bool
@@ -71,7 +77,7 @@ class Controller_Squash_Booking extends Controller
 	private function validateDataFromClientForInitTimetable($dataFromClient): void
 	{
 		$invalidParams = [];
-		if(!$this->isRequestedDateFormatValid('d/m/Y', $dataFromClient['requestedDate']))
+		if(!$this->isRequestedDateNotPastAndDateFormatValid('d/m/Y', $dataFromClient['requestedDate']))
 		{
 			$invalidParams[] = 'requestedDate';
 		}

@@ -1,84 +1,4 @@
 jQuery(function () {
-    // Входная строка в формате "dd.mm.yyyy"
-    const parseDdMmYyyyDateWithDotsToSeconds = (dateStringDdMmYyyyWithDots) => {
-        const parts = dateStringDdMmYyyyWithDots.split(".");
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-        const dateObject = new Date(year, month, day);
-        const timestampInSeconds = Math.floor(dateObject.getTime() / 1000);
-        return timestampInSeconds;
-    };
-
-    console.log(parseDdMmYyyyDateWithDotsToSeconds("10.02.2024"));
-    const formatSecondsToDate = (timestampInSeconds) => {
-        const dateObject = new Date(timestampInSeconds * 1000);
-        const day = dateObject.getDate();
-        const month = dateObject.getMonth() + 1;
-        const year = dateObject.getFullYear();
-        const formattedDate = `${day < 10 ? "0" : ""}${day}.${
-            month < 10 ? "0" : ""
-        }${month}.${year}`;
-        return formattedDate;
-    };
-    console.log(
-        formatSecondsToDate(parseDdMmYyyyDateWithDotsToSeconds("10.02.2024"))
-    );
-    console.log(formatSecondsToDate(1707585210));
-
-    const getCurrentDateString = () => {
-        const currentDate = new Date();
-        const day = currentDate.getDate();
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
-        const formattedDate = `${day < 10 ? "0" : ""}${day}/${
-            month < 10 ? "0" : ""
-        }${month}/${year}`;
-        return formattedDate;
-    };
-    let requestedDate = getCurrentDateString();
-    /*const currentTimestampInSeconds = Math.floor(Date.now() / 1000);
-    let requestedDate = currentTimestampInSeconds;
-    console.log(requestedDate); //getCurrentDate();*/ //данное значение requestedDate
-    //будет динамическим. При инициализации его значение будет текущей датой
-    //а далее оно будет при необходимости меняться. Либо с помощью datepicker
-    //на мобилках, либо же при нажатии на кнопку "СЛЕД НЕДЕЛЯ" на десктопе
-
-    /*ОПРЕДЕЛЯЕМ ВИДИМЫЙ ЛИ КОНКРЕТНЫЙ ЭЛЕМЕНТ НАШЕЙ ВЁРСТКИ И ПОЭТОМУ ОПРЕДЕЛЯЕМ
-    ДЕСКТОП ЭТО ИЛИ МОБИЛА*/
-    //варианты mobile и desktop
-    const device = "desktop"; //пока будет мобила, второй вариант desktop
-
-    const cachedTimetable = [];
-
-    function handleAjaxError(xhr, status, error) {
-        console.error("XHR Object:", xhr);
-        console.error("Status:", status);
-        console.error("Error:", error);
-    }
-    function fetchTimetableData() {
-        const timetableAction = "squash_booking/init_timetable";
-        $.ajax({
-            url: timetableAction,
-            method: "GET",
-            dataType: "json",
-            data: {
-                requestedDate,
-                device,
-            },
-            success: function (response) {
-                for (const key in response) {
-                    if (response.hasOwnProperty(key)) {
-                        // key - это имя свойства, response[key] - его значение
-                        console.log(key, response[key]);
-                    }
-                }
-            },
-            error: handleAjaxError,
-        });
-    }
-    fetchTimetableData();
-
     const openingHours = [
         "7:30 - 8:00",
         "8:00 - 8:30",
@@ -112,12 +32,141 @@ jQuery(function () {
         "22:00 - 22:30",
         "22:30 - 23:00",
     ];
-
-    // Получаем элемент с классом timetable__opening-hours
     const timetableElement = $(".timetable__opening-hours");
 
-    // Используем forEach для добавления каждого элемента внутрь timetableElement
-    openingHours.forEach(function (value) {
-        timetableElement.append("<li>" + value + "</li>");
-    });
+    const getDateInDMYFormat = (offset = 0) => {
+        const currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() + offset);
+        const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+        return currentDate.toLocaleDateString("en-GB", options);
+    };
+    let requestedDate = getDateInDMYFormat();
+
+    let device = "mobile";
+    if ($(".header-template__burger").css("display") === "none") {
+        device = "desktop";
+    }
+
+    const cachedTimetable = {};
+
+    //Create datepicker container
+    const datepickerContainer = $(
+        "<div class='datepicker__container'>" +
+            "<input type='text' id='datepicker' />" +
+            "<img src='/padelSquashBookingWebsite/assets/calendar.png' alt='Calendar icon' class='calendar-icon' />" +
+            "</div>"
+    );
+    const initDatepicker = () => {
+        $("#datepicker").val(requestedDate);
+        $("#datepicker").datepicker({
+            minDate: 0,
+            dateFormat: "dd/mm/yy",
+            onSelect: function (dateText) {
+                console.log("Выбрана дата: " + dateText);
+            },
+        });
+    };
+    //End datepicker section
+
+    function handleAjaxError(xhr, status, error) {
+        console.error("XHR Object:", xhr);
+        console.error("Status:", status);
+        console.error("Error:", error);
+    }
+    function fetchTimetableData() {
+        const timetableAction = "squash_booking/init_timetable";
+        $.ajax({
+            url: timetableAction,
+            method: "GET",
+            dataType: "json",
+            data: {
+                requestedDate,
+                device,
+            },
+            success: function (response) {
+                Object.assign(cachedTimetable, response);
+                timetableElement.empty();
+                if (device === "mobile") {
+                    for (const key in response) {
+                        if (response.hasOwnProperty(key)) {
+                            const ulElement = $("<ul>");
+                            const liElement =
+                                $("<li>").append(datepickerContainer);
+                            ulElement.append(liElement);
+                            openingHours.forEach(function (value) {
+                                if (response[key].includes(value)) {
+                                    ulElement.append(
+                                        "<li class='disabled'>" +
+                                            "<span>" +
+                                            value +
+                                            "</span>" +
+                                            "<span>booked</span>" +
+                                            "</li>"
+                                    );
+                                } else {
+                                    ulElement.append(
+                                        "<li>" +
+                                            "<span>" +
+                                            value +
+                                            "</span>" +
+                                            "<span>25€</span>" +
+                                            "</li>"
+                                    );
+                                }
+                            });
+                            timetableElement.append(ulElement);
+                            initDatepicker();
+                        }
+                    }
+                } else if (device === "desktop") {
+                    const ulElement = $("<ul>");
+                    ulElement.append("<li></li>");
+                    openingHours.forEach(function (value) {
+                        ulElement.append("<li>" + value + "</li>");
+                    });
+                    timetableElement.append(ulElement);
+                    for (const key in response) {
+                        if (response.hasOwnProperty(key)) {
+                            const ulElement = $("<ul>");
+                            ulElement.append("<li>" + key + "</li>");
+                            openingHours.forEach(function (value) {
+                                if (response[key].includes(value)) {
+                                    ulElement.append(
+                                        "<li class='disabled'>" +
+                                            "<span>25€</span>" +
+                                            "</li>"
+                                    );
+                                } else {
+                                    ulElement.append(
+                                        "<li>" +
+                                            "<span>✔</span>" +
+                                            "<span>25€</span>" +
+                                            "</li>"
+                                    );
+                                }
+                            });
+                            timetableElement.append(ulElement);
+                        }
+                    }
+                }
+            },
+            error: handleAjaxError,
+        });
+    }
+    fetchTimetableData();
+
+    let eventDelegationSelector;
+    if (device === "mobile") {
+        eventDelegationSelector = "ul li:not(:first-child):not(.disabled)";
+    } else if (device === "desktop") {
+        eventDelegationSelector =
+            "ul:not(:first-child) li:not(:first-child):not(.disabled)";
+    }
+    $(".timetable__opening-hours").on(
+        "click",
+        eventDelegationSelector,
+        function () {
+            $(this).toggleClass("touched");
+        }
+    );
 });
