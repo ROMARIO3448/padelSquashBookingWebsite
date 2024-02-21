@@ -45,27 +45,20 @@ class Model_Squash_Booking extends Model
 			$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedDate, $device);
 			$requestedDateData[$requestedDate] = [];
 			foreach ($collectionForSquashTimetable as $document) {
-				foreach ($document['bookings']['squash'][$requestedDate] as $alreadyBookedTime)
-				{
-					$requestedDateData[$requestedDate][] = $alreadyBookedTime;
-				}
+				$alreadyBookedTimes = iterator_to_array($document['bookings']['squash'][$requestedDate]);
+				$requestedDateData[$requestedDate] = array_merge($requestedDateData[$requestedDate], $alreadyBookedTimes);
 			}
 		}
 		else if($device === "desktop")
 		{
 			$requestedWeek = $this->getWeekFromDate($requestedDate, 'd/m/Y');
 			$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedWeek, $device);
-			foreach ($requestedWeek as $date) {
-				$requestedDateData[$date] = [];
-			}
+			$requestedDateData = array_fill_keys($requestedWeek, []);
 			foreach ($collectionForSquashTimetable as $document) {
 				foreach ($requestedWeek as $date) {
-					if (isset($document['bookings']['squash'][$date])) {
-						foreach ($document['bookings']['squash'][$date] as $alreadyBookedTime)
-						{
-							$requestedDateData[$date][] = $alreadyBookedTime;
-						}
-					}
+					if(!isset($document['bookings']['squash'][$date])) {continue;}
+					$alreadyBookedTimes = iterator_to_array($document['bookings']['squash'][$date]);
+					$requestedDateData[$date] = array_merge($requestedDateData[$date], $alreadyBookedTimes);
 				}
 			}
 		}

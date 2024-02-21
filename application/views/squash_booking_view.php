@@ -8,17 +8,10 @@
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/CircularArray.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/MobileGallerySlider.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/DesktopGallerySlider.js"></script>
+        <script defer type="module" src="/padelSquashBookingWebsite/scripts/DateFormatterForTimetable.js"></script>
+        <script defer type="module" src="/padelSquashBookingWebsite/scripts/TimetableHandler.js"></script>
+        <script defer type="module" src="/padelSquashBookingWebsite/scripts/opening-hours-for-timetable.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/squash-booking.js"></script>
-        <script defer type="module" src="/padelSquashBookingWebsite/scripts/timetable.js"></script>
-
-        <!-- jQuery UI -->
-        <link
-            rel="stylesheet"
-            href="/padelSquashBookingWebsite/css/jquery-ui.min.css"
-        />
-        <script defer src="/padelSquashBookingWebsite/scripts/jquery-ui.min.js"></script>
-        <!-- end jQuery UI -->
-        
         <title>Squash Booking</title>
     </head>
     <body>
@@ -174,16 +167,6 @@
                 </div>
                 <div class="main__google-geo google-geo">
                     <div class="google-geo__container _wide-container">
-                        <iframe 
-                            width="100%" 
-                            height="400" 
-                            frameborder="0" 
-                            scrolling="no" 
-                            marginheight="0" 
-                            marginwidth="0" 
-                            src="https://www.openstreetmap.org/export/embed.html?bbox=-180,-90,180,90&amp;layer=mapnik">
-                        </iframe>
-                        <!--src="https://www.openstreetmap.org/search?query=Hoekseize%2022%2C%208711%20HR%20Workum"-->
                     </div>
                 </div>
             </main>

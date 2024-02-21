@@ -1,5 +1,10 @@
 import MobileGallerySlider from "/padelSquashBookingWebsite/scripts/MobileGallerySlider.js";
 import DesktopGallerySlider from "/padelSquashBookingWebsite/scripts/DesktopGallerySlider.js";
+import {
+    openingHours,
+    openingHoursForDesktop,
+} from "/padelSquashBookingWebsite/scripts/opening-hours-for-timetable.js";
+import TimetableHandler from "/padelSquashBookingWebsite/scripts/TimetableHandler.js";
 
 jQuery(function () {
     const listOfImgSrcAndAlt = [
@@ -42,4 +47,15 @@ jQuery(function () {
     const mobileGallerySlider = new MobileGallerySlider(
         optionsForMobileGallerySlider
     );
+
+    let device = "mobile";
+    if ($(".header-template__burger").css("display") === "none") {
+        device = "desktop";
+    }
+    const optionsForTimetableHandler = {
+        openingHours,
+        openingHoursForDesktop,
+        device,
+    };
+    const timetableHandler = new TimetableHandler(optionsForTimetableHandler);
 });

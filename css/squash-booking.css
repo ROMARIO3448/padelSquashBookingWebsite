@@ -9,10 +9,13 @@
     );
     --almost-white-color-for-bg: rgb(249, 249, 249);
     --color-for-disabled-text: rgb(175, 175, 175);
+    --color-for-active-timetable-elem: rgb(67, 188, 155);
 }
 /*------------------------------------------------------*/
 /*---------------------PREVIEW--------------------------*/
 /*------------------------------------------------------*/
+.main__preview {
+}
 .preview__container {
     display: grid;
     grid-template-columns: 1fr;
@@ -277,7 +280,6 @@
     background-color: var(--almost-white-color-for-bg);
 }
 .timetable__container {
-    line-height: 2rem;
     font-size: 0.9rem;
     padding: 0.5rem 0;
 }
@@ -300,27 +302,61 @@
     padding: 0 1rem;
     border: 1px black solid;
     border-radius: 0.3rem;
+    line-height: 2rem;
     height: 2rem;
+}
+.timetable__opening-hours ul li:first-child {
+    font-size: 0.7rem;
+    border: none;
+    margin: 0 0.5rem;
+    padding: 0;
+    overflow: hidden;
+}
+.timetable__opening-hours ul:first-child li:first-child div:nth-child(2) {
+    font-size: 0.55rem;
+    margin: 0.3rem 0;
+    border: 1px black solid;
+}
+.timetable__arrow-pointer {
+    font-weight: 600;
+    transform: scaleY(3);
+}
+.timetable__opening-hours ul:first-child li:first-child div {
+    display: flex;
+    align-items: center;
+    padding: 0 0.3rem;
+    gap: 0.5rem;
+}
+.timetable__opening-hours
+    ul:first-child
+    li:first-child
+    div:is(:first-child, :last-child) {
+    color: red;
+    gap: 0.3rem;
+}
+.timetable__opening-hours ul:first-child li:first-child div img {
+    height: 0.7rem;
 }
 @media (min-width: 992px) {
     .timetable__container {
-        line-height: 0.7rem;
-        font-size: 0.45rem;
+        font-size: 0.4rem;
     }
     .timetable__opening-hours ul {
         flex-grow: 0;
     }
-    .timetable__opening-hours ul:first-child li {
+    .timetable__opening-hours ul:is(:first-child, :last-child) li {
         border: none;
-        font-size: 0.4rem;
     }
-    .timetable__opening-hours ul:first-child li:nth-child(even) {
+    .timetable__opening-hours
+        ul:is(:first-child, :last-child)
+        li:nth-child(even) {
         font-size: 0.35rem;
         color: gray;
     }
     .timetable__opening-hours ul li {
         justify-content: center;
         gap: 0.2rem;
+        line-height: 0.7rem;
         height: 0.7rem;
         margin: 0;
         padding: 0 0.3rem;
@@ -338,27 +374,32 @@
         > :first-child {
         display: inline;
     }
+    .timetable__opening-hours ul li:first-child {
+        font-size: inherit;
+        font-weight: bolder;
+    }
+    .timetable__opening-hours ul:is(:first-child, :last-child) li:first-child {
+    }
+    .timetable__arrow-pointer {
+        cursor: pointer;
+        transform: scaleY(2.5);
+    }
 }
 @media (hover: hover) {
     .timetable__opening-hours
-        ul:not(:first-child)
+        ul:not(:first-child):not(:last-child)
         li:not(:first-child):not(.disabled):hover {
-        background-color: rgb(67, 188, 155);
+        background-color: var(--color-for-active-timetable-elem);
         color: white;
     }
-    .timetable__opening-hours ul:first-child li:hover {
+    .timetable__opening-hours ul:is(:first-child, :last-child) li:hover {
         color: black;
         font-weight: bolder;
     }
 }
 .timetable__opening-hours ul li:not(:first-child):not(.disabled).touched {
-    background-color: rgb(67, 188, 155);
+    background-color: var(--color-for-active-timetable-elem);
     color: white;
-}
-.timetable__opening-hours ul li:first-child {
-    align-self: center;
-    border: none;
-    font-weight: bolder;
 }
 .timetable__opening-hours .disabled {
     border: none;
