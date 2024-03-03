@@ -5,6 +5,7 @@ import {
     openingHoursForDesktop,
 } from "/padelSquashBookingWebsite/scripts/opening-hours-for-timetable.js";
 import TimetableHandler from "/padelSquashBookingWebsite/scripts/TimetableHandler.js";
+import DatepickerHandler from "/padelSquashBookingWebsite/scripts/DatepickerHandler.js";
 
 jQuery(function () {
     const listOfImgSrcAndAlt = [
@@ -48,6 +49,8 @@ jQuery(function () {
         optionsForMobileGallerySlider
     );
 
+    const datepickerHandler = new DatepickerHandler();
+
     let device = "mobile";
     if ($(".header-template__burger").css("display") === "none") {
         device = "desktop";
@@ -56,6 +59,7 @@ jQuery(function () {
         openingHours,
         openingHoursForDesktop,
         device,
+        timetableDatepicker: datepickerHandler,
     };
     const timetableHandler = new TimetableHandler(optionsForTimetableHandler);
 });
