@@ -1,18 +1,62 @@
+import DateFormatterForTimetable from "/padelSquashBookingWebsite/scripts/DateFormatterForTimetable.js";
+
 class DatepickerHandler {
-    constructor() {
-        this._datepickerSelector = "#datepicker";
-        this._datepicker = $(this._datepickerSelector);
-    }
+    #datepickerSelector = "#datepicker";
+    #datepicker = $(this.#datepickerSelector);
+    #getDaysDifference = DateFormatterForTimetable.getDaysDifference;
+    #diffInDays = 0;
+    #buttonImageSource = "/padelSquashBookingWebsite/assets/calendar.png";
+    #onSelectEventName = "datepickerOnSelect";
+    #onSelectEvent;
+
     initDatepicker() {
-        console.log("Init datepicker");
-        this._datepicker.datepicker();
+        this.#createOnSelectEvent();
+        const handleOnSelect = (dateText) => {
+            this.#diffInDays = this.#getDaysDifference(dateText);
+            this.#callOnSelectEvent();
+        };
+        this.#datepicker.datepicker({
+            minDate: 0,
+            dateFormat: "dd/mm/yy",
+            onSelect: handleOnSelect,
+            showOn: "button",
+            buttonImage: this.#buttonImageSource,
+            buttonImageOnly: true,
+            buttonText: "Select date",
+        });
+        this.#setupEventListeners();
+    }
+    #setupEventListeners() {
+        this.#setupResizeAndScrollEventListeners();
+    }
+    #setupResizeAndScrollEventListeners() {
+        const handleResizeAndScroll = () => {
+            this.#datepicker.datepicker("hide");
+        };
+        $(window).on("resize", handleResizeAndScroll);
+        $(window).on("scroll", handleResizeAndScroll);
+    }
+    #createOnSelectEvent() {
+        this.#onSelectEvent = $.Event(this.#onSelectEventName);
+    }
+    #callOnSelectEvent() {
+        this.#datepicker.trigger(this.#onSelectEvent);
+    }
+    get datepicker() {
+        return this.#datepicker;
     }
     get datepickerSelector() {
-        return this._datepickerSelector;
+        return this.#datepickerSelector;
     }
     set datepickerSelector(value) {
-        this._datepickerSelector = value;
-        this._datepicker = $(value);
+        this.#datepickerSelector = value;
+        this.#datepicker = $(value);
+    }
+    get onSelectEventName() {
+        return this.#onSelectEventName;
+    }
+    get diffInDays() {
+        return this.#diffInDays;
     }
 }
 

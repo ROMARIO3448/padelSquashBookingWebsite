@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="/padelSquashBookingWebsite/application/resources/jquery-ui-1.13.2.custom/jquery-ui.css">
         <?php require_once(__DIR__ . '/common_styles_and_scripts.php'); ?>
         <link rel="stylesheet" href="/padelSquashBookingWebsite/css/squash-booking.css" />
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/CircularArray.js"></script>
@@ -12,11 +13,7 @@
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/TimetableHandler.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/opening-hours-for-timetable.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/DatepickerHandler.js"></script>
-
-        <link rel="stylesheet" href="/padelSquashBookingWebsite/application/resources/jquery-ui-1.13.2.custom/jquery-ui.css">
-        <!--<script defer src="/padelSquashBookingWebsite/application/resources/jquery-ui-1.13.2.custom/external/jquery/jquery.js"></script>-->
         <script defer src="/padelSquashBookingWebsite/application/resources/jquery-ui-1.13.2.custom/jquery-ui.js"></script>
-
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/squash-booking.js"></script>
         <title>Squash Booking</title>
     </head>
@@ -162,6 +159,10 @@
                 </div>
                 <div class="main__timetable timetable">
                     <div class="timetable__container _container">
+                        <div class="timetable__book-action">
+                            <span>To book, select a time</span>
+                            <span>Book</span>
+                        </div>
                         <div id="timetable__schedule" class="timetable__opening-hours">
                             
                         </div>

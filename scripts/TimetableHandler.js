@@ -34,9 +34,90 @@ class TimetableHandler {
         this.timetableDatepicker = options.timetableDatepicker;
         this.datepickerElementSelector =
             ".timetable__opening-hours ul:first-child li:first-child div:nth-child(2) input";
+        this.datepickerElem;
+
+        /*Cache booked slots*/
+        this.alreadyChosenSlots = {};
 
         this.setupEventListeners();
         this.fetchTimetableData();
+    }
+    /*----------------------------------------------------------------*/
+    hasAnyKeyInObj(arrayOfKeys, objectToCheck) {
+        return arrayOfKeys.some((key) =>
+            Object.keys(objectToCheck).includes(key)
+        );
+    }
+    isObjEmpty(obj) {
+        return Object.keys(obj).length === 0;
+    }
+    /*----------------------------------------------------------------*/
+    getDateFromUl($element, isMobile, isParent) {
+        const firstUlChild = isParent
+            ? $element.children(":first")
+            : $element.parent().children(":first");
+        return isMobile
+            ? firstUlChild.find("input").val()
+            : firstUlChild.text();
+    }
+    cacheTouchedLiData(event, isMobile) {
+        const updateAlreadyChosenSlots = (selectedDate, index) => {
+            if (!this.alreadyChosenSlots?.[selectedDate]) {
+                this.alreadyChosenSlots[selectedDate] = [];
+            }
+            if (this.alreadyChosenSlots[selectedDate].includes(index)) {
+                removeIndexFromChosenSlots(selectedDate, index);
+            } else {
+                this.alreadyChosenSlots[selectedDate].push(index);
+            }
+        };
+        const removeIndexFromChosenSlots = (selectedDate, index) => {
+            if (this.alreadyChosenSlots[selectedDate].length === 1) {
+                delete this.alreadyChosenSlots[selectedDate];
+                return;
+            }
+            const indexToRemove =
+                this.alreadyChosenSlots[selectedDate].indexOf(index);
+            this.alreadyChosenSlots[selectedDate].splice(indexToRemove, 1);
+        };
+        const currentTarget = $(event.currentTarget);
+        const index = currentTarget.index();
+        const selectedDate = this.getDateFromUl(currentTarget, isMobile);
+        updateAlreadyChosenSlots(selectedDate, index);
+    }
+    renderAlreadyChosenSlots(isMobile) {
+        const toggleTouchedLi = ($ulElement, indexes) => {
+            indexes.forEach((indexOfTouchedLi) => {
+                $ulElement
+                    .children()
+                    .eq(indexOfTouchedLi)
+                    .toggleClass("touched");
+            });
+        };
+        if (
+            this.isObjEmpty(this.alreadyChosenSlots) ||
+            !this.hasAnyKeyInObj(
+                this.getTimetableDatesToCheck(),
+                this.alreadyChosenSlots
+            )
+        ) {
+            return;
+        }
+        const $ulElements = isMobile
+            ? this.timetableElement.find("ul")
+            : this.timetableElement.find(
+                  "ul:not(:first-child):not(:last-child)"
+              );
+        $ulElements.each((index, ulElement) => {
+            const $ulElement = $(ulElement);
+            const dateFromUl = this.getDateFromUl($ulElement, isMobile, true);
+            if (this.alreadyChosenSlots.hasOwnProperty(dateFromUl)) {
+                toggleTouchedLi(
+                    $ulElement,
+                    this.alreadyChosenSlots[dateFromUl]
+                );
+            }
+        });
     }
     /*----------------------------------------------------------------*/
     setupEventListeners() {
@@ -49,13 +130,17 @@ class TimetableHandler {
             : this.desktopTouchableSelector;
         this.timetableElement.on("click", eventSelector, (event) => {
             event.currentTarget.classList.toggle("touched");
+            this.cacheTouchedLiData(event, isMobile);
         });
     }
-    updateDateAndFetchTimetableData(offset) {
+    updateDateAndFetchTimetableData(offset, diffInDays) {
         if (this.isAjaxInProgress) {
             return;
         }
-        this.stepOfDateOffset += offset;
+        this.stepOfDateOffset =
+            diffInDays !== undefined
+                ? diffInDays
+                : this.stepOfDateOffset + offset;
         this.requestedDate = this.dateFormatter(this.stepOfDateOffset);
         this.fetchTimetableData();
     }
@@ -90,10 +175,23 @@ class TimetableHandler {
     initTimetableDatepicker() {
         this.setTimetableDatepicker();
         this.timetableDatepicker.initDatepicker();
+        this.setupDatepickerOnSelectEventListener();
     }
     setTimetableDatepicker() {
         this.timetableDatepicker.datepickerSelector =
             this.datepickerElementSelector;
+    }
+    setupDatepickerOnSelectEventListener() {
+        this.datepickerElem = this.timetableDatepicker.datepicker;
+        this.datepickerElem.on(
+            this.timetableDatepicker.onSelectEventName,
+            () => {
+                this.updateDateAndFetchTimetableData(
+                    undefined,
+                    this.timetableDatepicker.diffInDays
+                );
+            }
+        );
     }
     /*----------------------------------------------------------------*/
     getTimetableDatesToCheck() {
@@ -124,35 +222,53 @@ class TimetableHandler {
     }
     /*----------------------------------------------------------------*/
     fetchTimetableData() {
+        const fetchCachedTimetable = () => {
+            const objForFetchTimetableEmulation =
+                this.getObjForFetchTimetableEmulation();
+            this.handleTimetableSuccess(objForFetchTimetableEmulation);
+            this.isAjaxInProgress = false;
+        };
+        const fetchTimetableFromServer = () => {
+            $.ajax({
+                url: this.timetableAction,
+                method: "GET",
+                dataType: "json",
+                data: {
+                    requestedDate: this.requestedDate,
+                    device: this.device,
+                },
+                success: this.handleTimetableSuccess.bind(this),
+                error: this.handleTimetableError.bind(this),
+            });
+        };
         if (this.isAjaxInProgress) {
             return;
         }
         this.isAjaxInProgress = true;
         if (this.canIUseCachedTimetable()) {
-            const objForFetchTimetableEmulation =
-                this.getObjForFetchTimetableEmulation();
-            this.handleTimetableSuccess(objForFetchTimetableEmulation);
-            this.isAjaxInProgress = false;
-            return;
+            fetchCachedTimetable();
+        } else {
+            fetchTimetableFromServer();
         }
-        $.ajax({
-            url: this.timetableAction,
-            method: "GET",
-            dataType: "json",
-            data: {
-                requestedDate: this.requestedDate,
-                device: this.device,
-            },
-            success: this.handleTimetableSuccess.bind(this),
-            error: this.handleTimetableError.bind(this),
-        });
+    }
+    /*----------------------------------------------------------------*/
+    handleAjaxError(xhr, status, error) {
+        console.error("XHR Object:", xhr);
+        console.error("Status:", status);
+        console.error("Error:", error);
+    }
+    handleTimetableError(xhr, status, error) {
+        this.isAjaxInProgress = false;
+        this.handleAjaxError(xhr, status, error);
     }
     handleTimetableSuccess(response) {
         Object.assign(this.cachedTimetable, response);
         this.timetableElement.empty();
         this.renderTimetable(response);
         this.isAjaxInProgress = false;
+        this.renderAlreadyChosenSlots(this.isMobile);
     }
+    /*----------------------------------------------------------------*/
     hideArrowPointer(isMobile) {
         if (this.stepOfDateOffset <= 0) {
             const eventSelector = isMobile
@@ -196,8 +312,7 @@ class TimetableHandler {
         return `<li>
             ${getDivTimetableArrow(true, "<", -1)}
             <div>
-                <span>${date}</span>
-                <img src="/padelSquashBookingWebsite/assets/calendar.png" alt="Calendar icon" />
+                <input type="text" value="${date}" readonly>
             </div>
             ${getDivTimetableArrow(false, ">", 1)}
         </li>`;
@@ -240,15 +355,6 @@ class TimetableHandler {
             );
         if (this.isMobile) this.initTimetableDatepicker();
         this.hideArrowPointer(this.isMobile);
-    }
-    handleAjaxError(xhr, status, error) {
-        console.error("XHR Object:", xhr);
-        console.error("Status:", status);
-        console.error("Error:", error);
-    }
-    handleTimetableError(xhr, status, error) {
-        this.isAjaxInProgress = false;
-        this.handleAjaxError(xhr, status, error);
     }
 }
 

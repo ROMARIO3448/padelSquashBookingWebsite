@@ -282,7 +282,34 @@
 .timetable__container {
     font-size: 0.9rem;
     padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
+/*---------------------timetable__book-action--------------------------*/
+.timetable__book-action {
+    display: flex;
+    justify-content: space-between;
+}
+.timetable__book-action span {
+    white-space: nowrap;
+}
+.timetable__book-action span:first-child {
+    padding: 0.3rem 2rem;
+    margin-left: 1rem;
+}
+.timetable__book-action span:last-child {
+    background-color: var(--frame-bg-color);
+    margin-right: 1rem;
+    color: white;
+    padding: 0.3rem 2rem;
+}
+@media (min-width: 992px) {
+    .timetable__book-action {
+        font-size: 0.7rem;
+    }
+}
+/*---------------------timetable__opening-hours--------------------------*/
 .timetable__opening-hours {
     display: flex;
     gap: 0.5rem;
@@ -312,20 +339,10 @@
     padding: 0;
     overflow: hidden;
 }
-.timetable__opening-hours ul:first-child li:first-child div:nth-child(2) {
-    font-size: 0.55rem;
-    margin: 0.3rem 0;
-    border: 1px black solid;
-}
-.timetable__arrow-pointer {
-    font-weight: 600;
-    transform: scaleY(3);
-}
 .timetable__opening-hours ul:first-child li:first-child div {
     display: flex;
     align-items: center;
     padding: 0 0.3rem;
-    gap: 0.5rem;
 }
 .timetable__opening-hours
     ul:first-child
@@ -333,6 +350,25 @@
     div:is(:first-child, :last-child) {
     color: red;
     gap: 0.3rem;
+}
+.timetable__opening-hours ul:first-child li:first-child div:nth-child(2) {
+    font-size: 0.55rem;
+    margin: 0.3rem 0;
+    border: 1px black solid;
+    /*↓ It is necessary for datepicker positioning*/
+    padding: 0 0.3rem 0 0;
+}
+.timetable__opening-hours ul:first-child li:first-child div:nth-child(2) input {
+    background-color: inherit;
+    font-size: inherit;
+    width: 3.4rem;
+    height: 100%;
+    /*↓ It is necessary for datepicker positioning*/
+    padding: 0 0 0 0.3rem;
+}
+.timetable__arrow-pointer {
+    font-weight: 600;
+    transform: scaleY(3);
 }
 .timetable__opening-hours ul:first-child li:first-child div img {
     height: 0.7rem;
@@ -404,4 +440,8 @@
 .timetable__opening-hours .disabled {
     border: none;
     color: var(--color-for-disabled-text);
+}
+/*jQuery UI datepicker styles*/
+#ui-datepicker-div {
+    font-size: 0.6rem;
 }
