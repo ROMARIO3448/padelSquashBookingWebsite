@@ -10,6 +10,7 @@
     --almost-white-color-for-bg: rgb(249, 249, 249);
     --color-for-disabled-text: rgb(175, 175, 175);
     --color-for-active-timetable-elem: rgb(67, 188, 155);
+    --color-for-timetable-book-action: rgb(255, 233, 193);
 }
 /*------------------------------------------------------*/
 /*---------------------PREVIEW--------------------------*/
@@ -289,24 +290,56 @@
 /*---------------------timetable__book-action--------------------------*/
 .timetable__book-action {
     display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.timetable__book-action > div {
+    white-space: nowrap;
+    text-align: center;
+    padding: 0.3rem 0.5rem;
+    margin: 0 1rem;
+}
+.timetable__book-action > div:first-child {
+    display: flex;
     justify-content: space-between;
 }
-.timetable__book-action span {
-    white-space: nowrap;
+.timetable__book-action > div:first-child > span {
+    color: red;
 }
-.timetable__book-action span:first-child {
-    padding: 0.3rem 2rem;
-    margin-left: 1rem;
-}
-.timetable__book-action span:last-child {
+.timetable__book-action > div:last-child {
     background-color: var(--frame-bg-color);
     margin-right: 1rem;
     color: white;
-    padding: 0.3rem 2rem;
+    border-radius: 0.2rem;
+    opacity: 0.5;
+}
+.timetable__book-action > div:last-child.active {
+    opacity: 1;
+    cursor: pointer;
+}
+.timetable__book-action img {
+    height: 0.9rem;
 }
 @media (min-width: 992px) {
     .timetable__book-action {
-        font-size: 0.7rem;
+        font-size: 0.5rem;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .timetable__book-action > div:first-child {
+        padding: 0.3rem 0.5rem;
+        margin-left: 1rem;
+        background-color: var(--color-for-timetable-book-action);
+    }
+    .timetable__book-action > div:first-child > span {
+        display: none;
+    }
+    .timetable__book-action > div:first-child > div img {
+        display: none;
+    }
+    .timetable__book-action > div:last-child {
+        margin-right: 1rem;
+        padding: 0.3rem 2rem;
     }
 }
 /*---------------------timetable__opening-hours--------------------------*/
@@ -425,6 +458,7 @@
     .timetable__opening-hours
         ul:not(:first-child):not(:last-child)
         li:not(:first-child):not(.disabled):hover {
+        cursor: pointer;
         background-color: var(--color-for-active-timetable-elem);
         color: white;
     }

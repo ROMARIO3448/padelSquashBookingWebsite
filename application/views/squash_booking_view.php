@@ -160,8 +160,14 @@
                 <div class="main__timetable timetable">
                     <div class="timetable__container _container">
                         <div class="timetable__book-action">
-                            <span>To book, select a time</span>
-                            <span>Book</span>
+                            <div>
+                                <div>
+                                    <img src="/padelSquashBookingWebsite/assets/touchscreen.png" alt="Touchscreen icon">
+                                    <span>To book, select a time</span>
+                                </div>
+                                <span>Cancel</span>
+                            </div>
+                            <div>Book</div>
                         </div>
                         <div id="timetable__schedule" class="timetable__opening-hours">
                             

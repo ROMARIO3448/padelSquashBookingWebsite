@@ -15,6 +15,11 @@ class Model
     {
         return self::getClient()->sportcentrum->sportcentrumusers;
     }
+
+    protected static function getSportcentrumTemporaryBookings()
+    {
+        return self::getClient()->sportcentrum->temporarybookings;
+    }
     
     public function get_data($options)
     {

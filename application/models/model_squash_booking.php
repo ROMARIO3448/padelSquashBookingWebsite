@@ -1,4 +1,5 @@
 <?php
+
 class Model_Squash_Booking extends Model
 {
 	private function getWeekFromDate($requestedDate, $format): array
@@ -11,55 +12,42 @@ class Model_Squash_Booking extends Model
 		}
 		return $requestedWeek;
 	}
+
+	private function buildFilterForSquashTimetable($requestedDayOrWeek): array
+	{
+		$orConditions = [];
+		foreach ($requestedDayOrWeek as $date) {
+			$orConditions[] = ['bookings.squash.' . $date => ['$exists' => true]];
+		}
+		return ['$or' => $orConditions];
+	}
+
+	private function buildOptionsForSquashTimetable($requestedDayOrWeek): array
+	{
+		$projection = ['_id' => 0];
+		foreach ($requestedDayOrWeek as $date) {
+			$projection['bookings.squash.' . $date] = 1;
+		}
+		return ['projection' => $projection];
+	}
 	
 	private function getCollectionForSquashTimetable($requestedDayOrWeek): MongoDB\Driver\Cursor
 	{
 		$sportcentrumusers = Model::getSportcentrumUsersCollection();
-		$filter = [];
-		$options = [];
-		if (is_array($requestedDayOrWeek)) {
-			$orConditions = [];
-			foreach ($requestedDayOrWeek as $date) {
-    			$orConditions[] = ['bookings.squash.' . $date => ['$exists' => true]];
-			}
-			$filter = ['$or' => $orConditions];
-			$projection = ['_id' => 0];
-			foreach ($requestedDayOrWeek as $date) {
-    			$projection['bookings.squash.' . $date] = 1;
-			}
-			$options = ['projection' => $projection];
-		}
-		else
-		{
-			$filter = ['bookings.squash.' . $requestedDayOrWeek => ['$exists' => true]];
-			$options = ['projection' => ['_id' => 0, 'bookings.squash.' . $requestedDayOrWeek => 1]];
-		}
-		return $sportcentrumusers->find($filter, $options);;
+    	$filter = $this->buildFilterForSquashTimetable($requestedDayOrWeek);
+    	$options = $this->buildOptionsForSquashTimetable($requestedDayOrWeek);
+    	return $sportcentrumusers->find($filter, $options);
 	}
 
-	private function getAlreadyBookedSquashTimes($requestedDate, $device): array
+	private function getAlreadyBookedSquashSlots($requestedDayOrWeek): array
 	{
-		$requestedDateData = [];
-		if($device === 'mobile')
-		{
-			$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedDate, $device);
-			$requestedDateData[$requestedDate] = [];
-			foreach ($collectionForSquashTimetable as $document) {
-				$alreadyBookedTimes = iterator_to_array($document['bookings']['squash'][$requestedDate]);
-				$requestedDateData[$requestedDate] = array_merge($requestedDateData[$requestedDate], $alreadyBookedTimes);
-			}
-		}
-		else if($device === "desktop")
-		{
-			$requestedWeek = $this->getWeekFromDate($requestedDate, 'd/m/Y');
-			$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedWeek, $device);
-			$requestedDateData = array_fill_keys($requestedWeek, []);
-			foreach ($collectionForSquashTimetable as $document) {
-				foreach ($requestedWeek as $date) {
-					if(!isset($document['bookings']['squash'][$date])) {continue;}
-					$alreadyBookedTimes = iterator_to_array($document['bookings']['squash'][$date]);
-					$requestedDateData[$date] = array_merge($requestedDateData[$date], $alreadyBookedTimes);
-				}
+		$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedDayOrWeek);
+		$requestedDateData = array_fill_keys($requestedDayOrWeek, []);
+		foreach ($collectionForSquashTimetable as $document) {
+			foreach ($requestedDayOrWeek as $date) {
+				if(!isset($document['bookings']['squash'][$date])) {continue;}
+				$alreadyBookedTimes = iterator_to_array($document['bookings']['squash'][$date]);
+				$requestedDateData[$date] = array_merge($requestedDateData[$date], $alreadyBookedTimes);
 			}
 		}
 		return $requestedDateData;
@@ -69,8 +57,51 @@ class Model_Squash_Booking extends Model
 	{
 		$requestedDate = $options['requestedDate'];
 		$device = $options['device'];
-		return $this->getAlreadyBookedSquashTimes($requestedDate, $device);
+		$requestedDayOrWeek = $device === 'mobile' ? [$requestedDate] : $this->getWeekFromDate($requestedDate, 'd/m/Y');
+		return $this->getAlreadyBookedSquashSlots($requestedDayOrWeek);
 	}
+
+	private function buildSlotsAvailabilityFilter($slotsToCheck): array
+    {
+        $orConditions = [];
+        foreach ($slotsToCheck as $date => $times) {
+            $orConditions[] = ['bookings.squash.' . $date => ['$in' => $times]];
+        }
+        return ['$or' => $orConditions];
+    }
+
+    private function getFilteredDocumentsCount($filter): int
+    {
+        $sportcentrumusers = Model::getSportcentrumUsersCollection();
+        return $sportcentrumusers->countDocuments($filter);
+    }
+
+	private function areSlotsAvailable($slotsToCheck): bool
+    {
+        $filter = $this->buildSlotsAvailabilityFilter($slotsToCheck);
+        $count = $this->getFilteredDocumentsCount($filter);
+        return $count === 0;
+    }
+
+	private function insertTemporaryBookings($slotsToCheck): void
+    {
+        $temporarybookings = Model::getSportcentrumTemporaryBookings();
+        $document = [
+            '_id' => new MongoDB\BSON\ObjectID(),
+            'createdAt' => new MongoDB\BSON\UTCDateTime(),
+            'bookings' => ['squash' => $slotsToCheck]
+        ];
+        $temporarybookings->insertOne($document);
+    }
+
+	public function addTemporaryBookings($options): void
+    {
+        $slotsToCheck = $options['slotsToCheck'];
+		if($this->areSlotsAvailable($slotsToCheck))
+		{
+			$this->insertTemporaryBookings($slotsToCheck);
+		}
+    }
 
 	public function get_data($options): void
 	{

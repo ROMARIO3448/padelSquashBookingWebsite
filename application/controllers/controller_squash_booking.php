@@ -11,6 +11,16 @@ class Controller_Squash_Booking extends Controller
 		$this->view = new View();
 	}
 
+	private function logSquashData($data): void 
+	{
+		if (is_array($data)) {
+			$data = print_r($data, true);
+		}
+		$filePath = __DIR__ . '/squash_logs.txt';
+		file_put_contents($filePath, $data . PHP_EOL, FILE_APPEND);
+	}
+	
+
 	private function sendJsonResponse($dataForResponse): void
     {
         header("Content-Type: application/json");
@@ -37,17 +47,35 @@ class Controller_Squash_Booking extends Controller
     	exit();
 	}
 
-	private function getGETDataFromClientForJsonResponse($expectedParams): array
+	private function getRawDataFromClient($paramName): mixed
+	{
+		$dataFromClient = $_GET[$paramName] ?? $_POST[$paramName] ?? null;
+		if (empty($dataFromClient)) {
+			$jsonArray = json_decode(file_get_contents("php://input"), true);
+			if ($jsonArray !== null && isset($jsonArray[$paramName]) 
+				&& json_last_error() === JSON_ERROR_NONE) {
+				$dataFromClient = $jsonArray[$paramName];
+			} else {
+				$this->logSquashData(json_last_error_msg());
+				return null;
+			}
+        }
+		return $dataFromClient;
+	}
+
+	private function getDataFromClient($expectedParams): array
 	{
 		$missingParams = [];
-		foreach ($expectedParams as $value) {
-			if(isset($_GET[$value])) 
+		$dataFromClient = [];
+		foreach ($expectedParams as $paramName) {
+			$rawDataFromClient = $this->getRawDataFromClient($paramName);
+			if(!empty($rawDataFromClient))
 			{
-    			$dataFromClient[$value] = $_GET[$value];
+				$dataFromClient[$paramName] = $rawDataFromClient;
 			}
 			else
 			{
-				$missingParams[] = $value;
+				$missingParams[] = $paramName;
 			}
 		}
 		if (!empty($missingParams)) 
@@ -69,21 +97,65 @@ class Controller_Squash_Booking extends Controller
 		return false;
 	}
 
+	private function areAllDatesValid($dateFormat, $dates): bool
+	{
+		foreach ($dates as $date) {
+			if (!$this->isRequestedDateNotPastAndDateFormatValid($dateFormat, $date)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private function isDeviceStringValid($deviceString): bool
 	{
 		return ($deviceString === "mobile" || $deviceString === "desktop") ? true : false;
 	}
 
-	private function validateDataFromClientForInitTimetable($dataFromClient): void
+	private function areTimeSlotsValid($slotsToCheck): bool
+	{
+		$timeRegex = '/^\d{1,2}:\d{2}\s-\s\d{1,2}:\d{2}$/';
+		foreach ($slotsToCheck as $times) {
+			foreach ($times as $time) {
+				if (!preg_match($timeRegex, $time)) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	private function validateSlotsToCheck($dateFormat, $slotsToCheck, &$invalidParams): void
+	{
+    	if (!$this->areAllDatesValid($dateFormat, array_keys($slotsToCheck))
+		||!$this->areTimeSlotsValid($slotsToCheck)) {
+        	$invalidParams[] = 'slotsToCheck';
+    	}
+	}
+
+	private function validateRequestedDate($dateFormat, $requestedDate, &$invalidParams): void
+	{
+    	if (!$this->isRequestedDateNotPastAndDateFormatValid($dateFormat, $requestedDate)) {
+        	$invalidParams[] = 'requestedDate';
+    	}
+	}
+
+	private function validateDevice($device, &$invalidParams): void
+	{
+    	if (!$this->isDeviceStringValid($device)) {
+        	$invalidParams[] = 'device';
+    	}
+	}
+
+	private function validateDataFromClientForTimetable($dataFromClient): void
 	{
 		$invalidParams = [];
-		if(!$this->isRequestedDateNotPastAndDateFormatValid('d/m/Y', $dataFromClient['requestedDate']))
-		{
-			$invalidParams[] = 'requestedDate';
-		}
-		if(!$this->isDeviceStringValid($dataFromClient['device']))
-		{
-			$invalidParams[] = 'device';
+		$dateFormat = 'd/m/Y';
+		if (isset($dataFromClient['slotsToCheck'])) {
+			$this->validateSlotsToCheck($dateFormat, $dataFromClient['slotsToCheck'], $invalidParams);
+		} else {
+			$this->validateRequestedDate($dateFormat, $dataFromClient['requestedDate'], $invalidParams);
+			$this->validateDevice($dataFromClient['device'], $invalidParams);
 		}
 		if (!empty($invalidParams)) 
 		{
@@ -96,9 +168,21 @@ class Controller_Squash_Booking extends Controller
 		if (!Controller::isAjaxRequest()) {
             Controller::sendForbiddenResponse();
         }
-		$dataFromClient = $this->getGETDataFromClientForJsonResponse(['requestedDate', 'device']);
-		$this->validateDataFromClientForInitTimetable($dataFromClient);
+		$dataFromClient = $this->getDataFromClient(['requestedDate', 'device']);
+		$this->validateDataFromClientForTimetable($dataFromClient);
 		$dataForResponse = $this->model->getSquashTimetable($dataFromClient);
+		$this->sendJsonResponse($dataForResponse);
+	}
+
+	function action_check_timetable_slots(): void
+	{
+		if (!Controller::isAjaxRequest()) {
+            Controller::sendForbiddenResponse();
+        }
+		$dataFromClient = $this->getDataFromClient(['slotsToCheck']);
+		$this->validateDataFromClientForTimetable($dataFromClient);
+		//$dataForResponse = $this->model->areSlotsAvailable($dataFromClient);
+		$dataForResponse = $this->model->addTemporaryBookings($dataFromClient);
 		$this->sendJsonResponse($dataForResponse);
 	}
 

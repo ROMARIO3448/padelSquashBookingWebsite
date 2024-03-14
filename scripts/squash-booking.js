@@ -8,7 +8,7 @@ import TimetableHandler from "/padelSquashBookingWebsite/scripts/TimetableHandle
 import DatepickerHandler from "/padelSquashBookingWebsite/scripts/DatepickerHandler.js";
 
 jQuery(function () {
-    const listOfImgSrcAndAlt = [
+    const listOfGalleryImgSrcAndAlt = [
         [
             "/padelSquashBookingWebsite/assets/squash_court1.png",
             "First squash court",
@@ -29,7 +29,7 @@ jQuery(function () {
 
     const optionsForDesktopGallerySlider = {
         galleryContainer: ".preview__gallery",
-        listOfImgSrcAndAlt,
+        listOfImgSrcAndAlt: listOfGalleryImgSrcAndAlt,
         galleryMain: "#gallery__main",
         galleryLeftPointer: "#gallery__left-pointer",
         galleryRightPointer: "#gallery__right-pointer",
@@ -40,7 +40,7 @@ jQuery(function () {
 
     const optionsForMobileGallerySlider = {
         galleryContainer: ".preview__gallery",
-        listOfImgSrcAndAlt,
+        listOfImgSrcAndAlt: listOfGalleryImgSrcAndAlt,
         galleryMain: "#gallery__main",
         galleryPrev: "#gallery__prev",
         galleryNext: "#gallery__next",

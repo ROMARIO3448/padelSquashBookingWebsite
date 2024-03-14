@@ -39,8 +39,106 @@ class TimetableHandler {
         /*Cache booked slots*/
         this.alreadyChosenSlots = {};
 
+        /*Timetable book-action*/
+        this.$timetableBookingInfoElement = $(
+            ".timetable__book-action div:first-child > div span"
+        );
+        this.$timetableBookButtonElement = $(
+            ".timetable__book-action > div:last-child"
+        );
+        this.$touchscreenIconElement = $(
+            ".timetable__book-action > div:first-child > div img"
+        );
+        this.bookingInfoText = [
+            "To book, select a time",
+            "Select a convenient time for classes and click “Book”",
+        ];
+        this.initTimetableBookingInfoElement();
+        this.timetableAvailabilityAction =
+            "squash_booking/check_timetable_slots";
+
         this.setupEventListeners();
         this.fetchTimetableData();
+    }
+    /*----------------------------------------------------------------*/
+    setupBookButtonClickListener() {
+        const fetchAreSelectedSlotsStillAvailable = (slotsToCheck) => {
+            $.ajax({
+                url: this.timetableAvailabilityAction,
+                method: "POST",
+                dataType: "json",
+                contentType: "application/json",
+                data: JSON.stringify({ slotsToCheck }),
+                success: (response) => {
+                    console.log(response);
+                },
+                error: (error) => {
+                    console.log(error);
+                },
+            });
+        };
+        this.$timetableBookButtonElement.on("click", () => {
+            if (this.isObjEmpty(this.alreadyChosenSlots)) {
+                return;
+            }
+            const objWithTimestamps = this.convertIndexesToTimestamps(
+                this.alreadyChosenSlots
+            );
+            fetchAreSelectedSlotsStillAvailable(objWithTimestamps);
+        });
+    }
+    convertIndexesToTimestamps(objWithIndexes) {
+        const objWithTimestamps = {};
+        for (const date in objWithIndexes) {
+            if (objWithIndexes.hasOwnProperty(date)) {
+                const timestamps = objWithIndexes[date].map((index) => {
+                    return this.openingHours[index - 1];
+                });
+                objWithTimestamps[date] = timestamps;
+            }
+        }
+        return objWithTimestamps;
+    }
+    /*----------------------------------------------------------------*/
+    initTimetableBookingInfoElement() {
+        if (!this.isMobile)
+            this.$timetableBookingInfoElement.text(this.bookingInfoText[1]);
+    }
+    setupTimetableBookField(isMobile, priceInEuro = 25) {
+        const handleEmptySlots = () => {
+            this.$timetableBookingInfoElement.text(
+                isMobile ? this.bookingInfoText[0] : this.bookingInfoText[1]
+            );
+            if (isMobile) {
+                this.$touchscreenIconElement.show();
+            }
+            this.$timetableBookButtonElement.removeClass("active");
+        };
+        const calculateBookedSlots = () => {
+            let amountOfBookedSlots = 0;
+            for (const date in this.alreadyChosenSlots) {
+                if (this.alreadyChosenSlots.hasOwnProperty(date)) {
+                    amountOfBookedSlots += this.alreadyChosenSlots[date].length;
+                }
+            }
+            return amountOfBookedSlots;
+        };
+        const handleBookedSlots = () => {
+            if (isMobile) {
+                this.$touchscreenIconElement.hide();
+            }
+            this.$timetableBookButtonElement.addClass("active");
+            const amountOfBookedSlots = calculateBookedSlots();
+            const totalPrice = priceInEuro * amountOfBookedSlots;
+            this.$timetableBookingInfoElement.text(
+                `Selected ${amountOfBookedSlots / 2} hours for ${totalPrice}€`
+            );
+        };
+        if (this.isObjEmpty(this.alreadyChosenSlots)) {
+            handleEmptySlots();
+        } else {
+            handleBookedSlots();
+        }
     }
     /*----------------------------------------------------------------*/
     hasAnyKeyInObj(arrayOfKeys, objectToCheck) {
@@ -123,6 +221,7 @@ class TimetableHandler {
     setupEventListeners() {
         this.setupToggleTouchedClassEventListener(this.isMobile);
         this.setupArrowPointerEventListeners(this.isMobile);
+        this.setupBookButtonClickListener();
     }
     setupToggleTouchedClassEventListener(isMobile) {
         const eventSelector = isMobile
@@ -131,6 +230,7 @@ class TimetableHandler {
         this.timetableElement.on("click", eventSelector, (event) => {
             event.currentTarget.classList.toggle("touched");
             this.cacheTouchedLiData(event, isMobile);
+            this.setupTimetableBookField(isMobile);
         });
     }
     updateDateAndFetchTimetableData(offset, diffInDays) {
@@ -280,15 +380,15 @@ class TimetableHandler {
     getSpanTimetableArrow(arrowChar) {
         return `<span class='timetable__arrow-pointer'>${arrowChar}</span>`;
     }
-    getTimetableSlot(isBooked, isMobile, time, price = "25€") {
+    getTimetableSlot(isBooked, isMobile, time, priceInEuro = 25) {
         const disabledClass = isBooked ? "class='disabled'" : "";
         if (isMobile) {
             return `<li ${disabledClass}><span>${time}</span><span>${
-                isBooked ? "booked" : price
+                isBooked ? "booked" : priceInEuro + "€"
             }</span></li>`;
         }
         const desktopCheckmark = !isBooked ? "<span>✔</span>" : "";
-        return `<li ${disabledClass}>${desktopCheckmark}<span>${price}</span></li>`;
+        return `<li ${disabledClass}>${desktopCheckmark}<span>${priceInEuro}€</span></li>`;
     }
     renderTimeSlots(ulElement, bookedSlots, isMobile) {
         this.openingHours.forEach((time) => {
