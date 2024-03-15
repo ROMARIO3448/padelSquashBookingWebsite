@@ -10,6 +10,8 @@
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/MobileGallerySlider.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/DesktopGallerySlider.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/DateFormatterForTimetable.js"></script>
+        <script defer type="module" src="/padelSquashBookingWebsite/scripts/ObjectUtils.js"></script>
+        <script defer type="module" src="/padelSquashBookingWebsite/scripts/RedirectHandler.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/TimetableHandler.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/opening-hours-for-timetable.js"></script>
         <script defer type="module" src="/padelSquashBookingWebsite/scripts/DatepickerHandler.js"></script>

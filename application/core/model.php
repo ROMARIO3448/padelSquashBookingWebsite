@@ -16,7 +16,7 @@ class Model
         return self::getClient()->sportcentrum->sportcentrumusers;
     }
 
-    protected static function getSportcentrumTemporaryBookings()
+    protected static function getSportcentrumTemporaryBookingsCollection()
     {
         return self::getClient()->sportcentrum->temporarybookings;
     }

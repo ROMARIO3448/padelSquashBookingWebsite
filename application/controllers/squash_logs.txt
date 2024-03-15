@@ -2,3 +2,5 @@ Syntax error
 Syntax error
 No error
 No error
+Syntax error
+Syntax error

@@ -1,4 +1,6 @@
 import DateFormatterForTimetable from "/padelSquashBookingWebsite/scripts/DateFormatterForTimetable.js";
+import RedirectHandler from "/padelSquashBookingWebsite/scripts/RedirectHandler.js";
+import ObjectUtils from "/padelSquashBookingWebsite/scripts/ObjectUtils.js";
 
 class TimetableHandler {
     constructor(options) {
@@ -6,13 +8,17 @@ class TimetableHandler {
         this.openingHoursForDesktop = options.openingHoursForDesktop;
         this.device = options.device;
         this.isMobile = this.device === "mobile";
-        this.timetableElement = $(".timetable__opening-hours");
+        this.$timetableElement = $(".timetable__opening-hours");
         this.stepOfDateOffset = 0;
         this.dateFormatter = DateFormatterForTimetable.getDateInDMYFormat;
         this.requestedDate = this.dateFormatter(this.stepOfDateOffset);
         this.cachedTimetable = {};
         this.isAjaxInProgress = false;
         this.timetableAction = "squash_booking/init_timetable";
+
+        /*ObjectUtils functions*/
+        this.hasAnyKeyInObj = ObjectUtils.hasAnyKeyInObj;
+        this.isObjEmpty = ObjectUtils.isObjEmpty;
 
         /*Arrow-pointer selectors*/
         this.mobileArrowLeftSelector =
@@ -70,21 +76,24 @@ class TimetableHandler {
                 contentType: "application/json",
                 data: JSON.stringify({ slotsToCheck }),
                 success: (response) => {
-                    console.log(response);
+                    this.isAjaxInProgress = false;
+                    if (response) RedirectHandler.redirectToPaymentPage();
                 },
-                error: (error) => {
-                    console.log(error);
-                },
+                error: this.handleTimetableError.bind(this),
             });
         };
         this.$timetableBookButtonElement.on("click", () => {
             if (this.isObjEmpty(this.alreadyChosenSlots)) {
                 return;
             }
+            if (this.isAjaxInProgress) {
+                return;
+            }
             const objWithTimestamps = this.convertIndexesToTimestamps(
                 this.alreadyChosenSlots
             );
             fetchAreSelectedSlotsStillAvailable(objWithTimestamps);
+            this.isAjaxInProgress = true;
         });
     }
     convertIndexesToTimestamps(objWithIndexes) {
@@ -141,15 +150,6 @@ class TimetableHandler {
         }
     }
     /*----------------------------------------------------------------*/
-    hasAnyKeyInObj(arrayOfKeys, objectToCheck) {
-        return arrayOfKeys.some((key) =>
-            Object.keys(objectToCheck).includes(key)
-        );
-    }
-    isObjEmpty(obj) {
-        return Object.keys(obj).length === 0;
-    }
-    /*----------------------------------------------------------------*/
     getDateFromUl($element, isMobile, isParent) {
         const firstUlChild = isParent
             ? $element.children(":first")
@@ -178,9 +178,9 @@ class TimetableHandler {
                 this.alreadyChosenSlots[selectedDate].indexOf(index);
             this.alreadyChosenSlots[selectedDate].splice(indexToRemove, 1);
         };
-        const currentTarget = $(event.currentTarget);
-        const index = currentTarget.index();
-        const selectedDate = this.getDateFromUl(currentTarget, isMobile);
+        const $currentTarget = $(event.currentTarget);
+        const index = $currentTarget.index();
+        const selectedDate = this.getDateFromUl($currentTarget, isMobile);
         updateAlreadyChosenSlots(selectedDate, index);
     }
     renderAlreadyChosenSlots(isMobile) {
@@ -202,8 +202,8 @@ class TimetableHandler {
             return;
         }
         const $ulElements = isMobile
-            ? this.timetableElement.find("ul")
-            : this.timetableElement.find(
+            ? this.$timetableElement.find("ul")
+            : this.$timetableElement.find(
                   "ul:not(:first-child):not(:last-child)"
               );
         $ulElements.each((index, ulElement) => {
@@ -227,7 +227,7 @@ class TimetableHandler {
         const eventSelector = isMobile
             ? this.mobileTouchableSelector
             : this.desktopTouchableSelector;
-        this.timetableElement.on("click", eventSelector, (event) => {
+        this.$timetableElement.on("click", eventSelector, (event) => {
             event.currentTarget.classList.toggle("touched");
             this.cacheTouchedLiData(event, isMobile);
             this.setupTimetableBookField(isMobile);
@@ -245,15 +245,19 @@ class TimetableHandler {
         this.fetchTimetableData();
     }
     setupMobileArrowPointerEventListeners() {
-        this.timetableElement.on("click", this.mobileArrowLeftSelector, () => {
+        this.$timetableElement.on("click", this.mobileArrowLeftSelector, () => {
             this.updateDateAndFetchTimetableData(-1);
         });
-        this.timetableElement.on("click", this.mobileArrowRightSelector, () => {
-            this.updateDateAndFetchTimetableData(1);
-        });
+        this.$timetableElement.on(
+            "click",
+            this.mobileArrowRightSelector,
+            () => {
+                this.updateDateAndFetchTimetableData(1);
+            }
+        );
     }
     setupDesktopArrowPointerEventListener() {
-        this.timetableElement.on(
+        this.$timetableElement.on(
             "click",
             this.desktopArrowSelector,
             (event) => {
@@ -363,7 +367,7 @@ class TimetableHandler {
     }
     handleTimetableSuccess(response) {
         Object.assign(this.cachedTimetable, response);
-        this.timetableElement.empty();
+        this.$timetableElement.empty();
         this.renderTimetable(response);
         this.isAjaxInProgress = false;
         this.renderAlreadyChosenSlots(this.isMobile);
@@ -418,39 +422,39 @@ class TimetableHandler {
         </li>`;
     }
     getCoreUlElement(date, bookedSlots, isMobile) {
-        const ulElement = $("<ul>");
+        const $ulElement = $("<ul>");
         if (isMobile) {
-            ulElement.append(this.getMobileFirstLi(date));
+            $ulElement.append(this.getMobileFirstLi(date));
         } else {
-            ulElement.append("<li>" + date + "</li>");
+            $ulElement.append("<li>" + date + "</li>");
         }
-        this.renderTimeSlots(ulElement, bookedSlots, isMobile);
-        return ulElement;
+        this.renderTimeSlots($ulElement, bookedSlots, isMobile);
+        return $ulElement;
     }
     getOpeningHoursUlForDesktop(isFirstUl = true) {
-        const ulElement = $("<ul>");
+        const $ulElement = $("<ul>");
         if (isFirstUl) {
-            ulElement.append(`<li>${this.getSpanTimetableArrow("<")}</li>`);
+            $ulElement.append(`<li>${this.getSpanTimetableArrow("<")}</li>`);
         } else {
-            ulElement.append(`<li>${this.getSpanTimetableArrow(">")}</li>`);
+            $ulElement.append(`<li>${this.getSpanTimetableArrow(">")}</li>`);
         }
         this.openingHoursForDesktop.forEach(function (value) {
-            ulElement.append("<li>" + value + "</li>");
+            $ulElement.append("<li>" + value + "</li>");
         });
-        return ulElement;
+        return $ulElement;
     }
     renderTimetable(response) {
         if (!this.isMobile)
-            this.timetableElement.append(this.getOpeningHoursUlForDesktop());
+            this.$timetableElement.append(this.getOpeningHoursUlForDesktop());
         for (const key in response) {
             if (response.hasOwnProperty(key)) {
-                this.timetableElement.append(
+                this.$timetableElement.append(
                     this.getCoreUlElement(key, response[key], this.isMobile)
                 );
             }
         }
         if (!this.isMobile)
-            this.timetableElement.append(
+            this.$timetableElement.append(
                 this.getOpeningHoursUlForDesktop(false)
             );
         if (this.isMobile) this.initTimetableDatepicker();

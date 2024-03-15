@@ -31,17 +31,17 @@ class Model_Squash_Booking extends Model
 		return ['projection' => $projection];
 	}
 	
-	private function getCollectionForSquashTimetable($requestedDayOrWeek): MongoDB\Driver\Cursor
+	private function getCollectionForSquashTimetable($requestedDayOrWeek, $isTemporary): MongoDB\Driver\Cursor
 	{
-		$sportcentrumusers = Model::getSportcentrumUsersCollection();
+		$collection = $isTemporary ? Model::getSportcentrumTemporaryBookingsCollection() : Model::getSportcentrumUsersCollection();
     	$filter = $this->buildFilterForSquashTimetable($requestedDayOrWeek);
     	$options = $this->buildOptionsForSquashTimetable($requestedDayOrWeek);
-    	return $sportcentrumusers->find($filter, $options);
+    	return $collection->find($filter, $options);
 	}
 
-	private function getAlreadyBookedSquashSlots($requestedDayOrWeek): array
+	private function getAlreadyBookedSquashSlots($requestedDayOrWeek, $isTemporary = false): array
 	{
-		$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedDayOrWeek);
+		$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedDayOrWeek, $isTemporary);
 		$requestedDateData = array_fill_keys($requestedDayOrWeek, []);
 		foreach ($collectionForSquashTimetable as $document) {
 			foreach ($requestedDayOrWeek as $date) {
@@ -58,7 +58,7 @@ class Model_Squash_Booking extends Model
 		$requestedDate = $options['requestedDate'];
 		$device = $options['device'];
 		$requestedDayOrWeek = $device === 'mobile' ? [$requestedDate] : $this->getWeekFromDate($requestedDate, 'd/m/Y');
-		return $this->getAlreadyBookedSquashSlots($requestedDayOrWeek);
+		return array_merge_recursive($this->getAlreadyBookedSquashSlots($requestedDayOrWeek), $this->getAlreadyBookedSquashSlots($requestedDayOrWeek, true));
 	}
 
 	private function buildSlotsAvailabilityFilter($slotsToCheck): array
@@ -70,37 +70,56 @@ class Model_Squash_Booking extends Model
         return ['$or' => $orConditions];
     }
 
-    private function getFilteredDocumentsCount($filter): int
+    private function getFilteredDocumentsCount($filter, $isTemporary = false): int
     {
-        $sportcentrumusers = Model::getSportcentrumUsersCollection();
-        return $sportcentrumusers->countDocuments($filter);
+        $collection = $isTemporary ? Model::getSportcentrumTemporaryBookingsCollection() : Model::getSportcentrumUsersCollection();
+        return $collection->countDocuments($filter);
     }
 
 	private function areSlotsAvailable($slotsToCheck): bool
     {
         $filter = $this->buildSlotsAvailabilityFilter($slotsToCheck);
-        $count = $this->getFilteredDocumentsCount($filter);
+        $count = $this->getFilteredDocumentsCount($filter) + $this->getFilteredDocumentsCount($filter, true);
         return $count === 0;
     }
 
-	private function insertTemporaryBookings($slotsToCheck): void
+	private function insertTemporaryBookings($slotsToCheck): ?MongoDB\InsertOneResult
     {
-        $temporarybookings = Model::getSportcentrumTemporaryBookings();
-        $document = [
-            '_id' => new MongoDB\BSON\ObjectID(),
-            'createdAt' => new MongoDB\BSON\UTCDateTime(),
-            'bookings' => ['squash' => $slotsToCheck]
-        ];
-        $temporarybookings->insertOne($document);
+		try {
+			$temporarybookings = Model::getSportcentrumTemporaryBookingsCollection();
+			$document = [
+				'_id' => new MongoDB\BSON\ObjectID(),
+				'createdAt' => new MongoDB\BSON\UTCDateTime(),
+				'bookings' => ['squash' => $slotsToCheck]
+			];
+			$result = $temporarybookings->insertOne($document);
+			return $result;
+		} catch (MongoDB\Driver\Exception\Exception $e) {
+			return null;
+		}
     }
 
-	public function addTemporaryBookings($options): void
+	private function storeTempDataInSession($slotsToCheck): void
+	{
+		session_start();
+		$tempUserId = uniqid('tempUser_', true);
+		$_SESSION['tempUserId'] = $tempUserId;
+		$_SESSION['slotsToPay'] = $slotsToCheck;
+		session_write_close();
+	}
+
+	public function addTemporaryBookings($options): bool
     {
         $slotsToCheck = $options['slotsToCheck'];
 		if($this->areSlotsAvailable($slotsToCheck))
 		{
-			$this->insertTemporaryBookings($slotsToCheck);
+			if($this->insertTemporaryBookings($slotsToCheck) !== null)
+			{
+				$this->storeTempDataInSession($slotsToCheck);
+				return true;
+			}
 		}
+		return false;
     }
 
 	public function get_data($options): void

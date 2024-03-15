@@ -1,5 +1,7 @@
 <?php
 
+use function PHPUnit\Framework\isEmpty;
+
 class Controller_Squash_Booking extends Controller
 {
     public $model;
@@ -114,14 +116,18 @@ class Controller_Squash_Booking extends Controller
 
 	private function areTimeSlotsValid($slotsToCheck): bool
 	{
-		$timeRegex = '/^\d{1,2}:\d{2}\s-\s\d{1,2}:\d{2}$/';
+		if (empty($slotsToCheck)) return false;
+		$counter = 0;
+		$timeRegex = '/^([01]?[0-9]|2[0-3]):[0-5][0-9]\s-\s([01]?[0-9]|2[0-3]):[0-5][0-9]$/';
 		foreach ($slotsToCheck as $times) {
 			foreach ($times as $time) {
+				$counter++;
 				if (!preg_match($timeRegex, $time)) {
 					return false;
 				}
 			}
 		}
+		if ($counter === 0) return false;
 		return true;
 	}
 
@@ -163,10 +169,10 @@ class Controller_Squash_Booking extends Controller
 		}
 	}
 
-	function action_init_timetable(): void
+	public function action_init_timetable(): void
 	{
-		if (!Controller::isAjaxRequest()) {
-            Controller::sendForbiddenResponse();
+		if (!$this->isAjaxRequest()) {
+            $this->sendForbiddenResponse();
         }
 		$dataFromClient = $this->getDataFromClient(['requestedDate', 'device']);
 		$this->validateDataFromClientForTimetable($dataFromClient);
@@ -174,19 +180,18 @@ class Controller_Squash_Booking extends Controller
 		$this->sendJsonResponse($dataForResponse);
 	}
 
-	function action_check_timetable_slots(): void
+	public function action_check_timetable_slots(): void
 	{
-		if (!Controller::isAjaxRequest()) {
-            Controller::sendForbiddenResponse();
+		if (!$this->isAjaxRequest()) {
+            $this->sendForbiddenResponse();
         }
 		$dataFromClient = $this->getDataFromClient(['slotsToCheck']);
 		$this->validateDataFromClientForTimetable($dataFromClient);
-		//$dataForResponse = $this->model->areSlotsAvailable($dataFromClient);
 		$dataForResponse = $this->model->addTemporaryBookings($dataFromClient);
 		$this->sendJsonResponse($dataForResponse);
 	}
 
-	function action_index($params): void
+	public function action_index($params): void
 	{
 		$this->view->generate('squash_booking_view.php');
 	}

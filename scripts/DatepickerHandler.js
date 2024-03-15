@@ -2,7 +2,7 @@ import DateFormatterForTimetable from "/padelSquashBookingWebsite/scripts/DateFo
 
 class DatepickerHandler {
     #datepickerSelector = "#datepicker";
-    #datepicker = $(this.#datepickerSelector);
+    #$datepicker = $(this.#datepickerSelector);
     #getDaysDifference = DateFormatterForTimetable.getDaysDifference;
     #diffInDays = 0;
     #buttonImageSource = "/padelSquashBookingWebsite/assets/calendar.png";
@@ -15,7 +15,7 @@ class DatepickerHandler {
             this.#diffInDays = this.#getDaysDifference(dateText);
             this.#callOnSelectEvent();
         };
-        this.#datepicker.datepicker({
+        this.#$datepicker.datepicker({
             minDate: 0,
             dateFormat: "dd/mm/yy",
             onSelect: handleOnSelect,
@@ -31,7 +31,7 @@ class DatepickerHandler {
     }
     #setupResizeAndScrollEventListeners() {
         const handleResizeAndScroll = () => {
-            this.#datepicker.datepicker("hide");
+            this.#$datepicker.datepicker("hide");
         };
         $(window).on("resize", handleResizeAndScroll);
         $(window).on("scroll", handleResizeAndScroll);
@@ -40,17 +40,17 @@ class DatepickerHandler {
         this.#onSelectEvent = $.Event(this.#onSelectEventName);
     }
     #callOnSelectEvent() {
-        this.#datepicker.trigger(this.#onSelectEvent);
+        this.#$datepicker.trigger(this.#onSelectEvent);
     }
     get datepicker() {
-        return this.#datepicker;
+        return this.#$datepicker;
     }
     get datepickerSelector() {
         return this.#datepickerSelector;
     }
     set datepickerSelector(value) {
         this.#datepickerSelector = value;
-        this.#datepicker = $(value);
+        this.#$datepicker = $(value);
     }
     get onSelectEventName() {
         return this.#onSelectEventName;
