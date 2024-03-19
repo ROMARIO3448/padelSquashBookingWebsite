@@ -177,6 +177,7 @@
 }
 @media (hover: hover) {
     .gallery__indicator {
+        display: block;
         position: absolute;
         top: 50%;
         transform: translateY(-50%);
@@ -186,24 +187,17 @@
         opacity: 0.5;
         height: 2rem;
     }
-
     #gallery__left-pointer {
         left: -1rem;
     }
-
     #gallery__right-pointer {
         right: -1rem;
-    }
-    #gallery__left-pointer.hovered,
-    #gallery__right-pointer.hovered {
-        display: block;
     }
     #gallery__left-pointer:hover,
     #gallery__right-pointer:hover {
         opacity: 0.7;
     }
     #gallery__price-hint {
-        display: block;
         height: 4rem;
         inset: 0 auto auto 15%; /*left: 15%; top: 0;*/
         transform: translateX(-50%);

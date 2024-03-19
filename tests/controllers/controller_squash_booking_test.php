@@ -10,9 +10,9 @@ require_once './application/controllers/controller_squash_booking.php';
 
 class Controller_Squash_Booking_Test extends TestCase
 {
-    protected $controllerSquashBooking;
+    private $controllerSquashBooking;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         $this->controllerSquashBooking = new Controller_Squash_Booking();
     }
@@ -23,7 +23,7 @@ class Controller_Squash_Booking_Test extends TestCase
         $_POST = [];
     }
 
-    public function requestedDateProvider(): array
+    private function requestedDateProvider(): array
     {
         return [
             ['d/m/Y', '01/01/2030', true],
@@ -39,16 +39,16 @@ class Controller_Squash_Booking_Test extends TestCase
     /**
      * @dataProvider requestedDateProvider
      */
-    public function testRequestedDate($format, $requestedDate, $expectedBoolean): void
+    public function testRequestedDate($dateFormat, $requestedDate, $expectedBoolean): void
     {
         $method = new ReflectionMethod(Controller_Squash_Booking::class, 'isRequestedDateNotPastAndDateFormatValid');
         $method->setAccessible(true);
-        $result = $method->invoke($this->controllerSquashBooking, $format, $requestedDate);
+        $result = $method->invoke($this->controllerSquashBooking, $dateFormat, $requestedDate);
         $this->assertEquals($expectedBoolean, $result);
     }
 
     /*-------------------------------------------------------------------------*/
-    public function timeSlotsProvider(): array
+    private function timeSlotsProvider(): array
     {
         $firstTrueSlot = [
             '13/06/2023' => [
@@ -103,10 +103,10 @@ class Controller_Squash_Booking_Test extends TestCase
             '14/06/2023' => [
                 "",
                 55,
+            ],
+            '22/06/2023' => [
+                "16:30 - 17:00",
             ]
-        ];
-
-        $fourthFalseSlot = [
         ];
         
         return [
@@ -116,7 +116,6 @@ class Controller_Squash_Booking_Test extends TestCase
             [$firstFalseSlot, false],
             [$secondFalseSlot, false],
             [$thirdFalseSlot, false],
-            [$fourthFalseSlot, false],
         ];
     }
 
@@ -132,7 +131,7 @@ class Controller_Squash_Booking_Test extends TestCase
     }
 
     /*---------------------------------------------------------------*/
-    public function rawDataProvider(): array
+    private function rawDataProvider(): array
     {
         return [
             ['param1', 'getValue', 'postValue', 'getValue'],
@@ -152,5 +151,54 @@ class Controller_Squash_Booking_Test extends TestCase
         $method->setAccessible(true);
         $result = $method->invoke($this->controllerSquashBooking, $paramName);
         $this->assertEquals($expectedData, $result);
+    }
+
+    /*------------------------------------------------------------------*/
+    private function allDatesProvider(): array
+    {
+        return [
+            ['d/m/Y', ['01/01/2030'], true],
+            ['d/m/Y', ['01/01/2030', '26/07/2035'], true],
+            ['Y-m-d', ['2030-01-01', '2034-01-01'], true],
+            ['d/m/Y', ['01/01/2030', '26/07/2000'], false],
+            ['d/m/Y', ['26/07/2030', '2034-01-01'], false],
+            ['Y-m-d', ['01/01/2030', '26/07/2030'], false],
+            ['invalid', ['2034-01-01'], false],
+            ['d/m/Y', ['invalid'], false],
+        ];
+    }
+
+    /**
+     * @dataProvider allDatesProvider
+     */
+    public function testAllDates($dateFormat, $dates, $expectedBoolean): void
+    {
+        $method = new ReflectionMethod(Controller_Squash_Booking::class, 'areAllDatesValid');
+        $method->setAccessible(true);
+        $result = $method->invoke($this->controllerSquashBooking, $dateFormat, $dates);
+        $this->assertEquals($expectedBoolean, $result);
+    }
+
+    /*------------------------------------------------------------------*/
+    private function deviceStringProvider(): array
+    {
+        return [
+            ['mobile', true],
+            ['desktop', true],
+            ['', false],
+            [null, false],
+            [['mobile'], false],
+        ];
+    }
+
+    /**
+     * @dataProvider deviceStringProvider
+     */
+    public function testDeviceString($deviceString, $expectedBoolean): void
+    {
+        $method = new ReflectionMethod(Controller_Squash_Booking::class, 'isDeviceStringValid');
+        $method->setAccessible(true);
+        $result = $method->invoke($this->controllerSquashBooking, $deviceString);
+        $this->assertEquals($expectedBoolean, $result);
     }
 }

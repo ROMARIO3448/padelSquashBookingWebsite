@@ -1,31 +1,17 @@
 <?php
 
-use function PHPUnit\Framework\isEmpty;
-
 class Controller_Squash_Booking extends Controller
 {
-    public $model;
-    public $view;
-
 	function __construct()
 	{
 		$this->model = new Model_Squash_Booking();
 		$this->view = new View();
 	}
 
-	private function logSquashData($data): void 
-	{
-		if (is_array($data)) {
-			$data = print_r($data, true);
-		}
-		$filePath = __DIR__ . '/squash_logs.txt';
-		file_put_contents($filePath, $data . PHP_EOL, FILE_APPEND);
-	}
-	
-
-	private function sendJsonResponse($dataForResponse): void
+	private function sendJsonResponse($dataForResponse, $responseCode = 200): void
     {
         header("Content-Type: application/json");
+		http_response_code($responseCode);
         echo json_encode($dataForResponse);
         exit();
     }
@@ -58,7 +44,6 @@ class Controller_Squash_Booking extends Controller
 				&& json_last_error() === JSON_ERROR_NONE) {
 				$dataFromClient = $jsonArray[$paramName];
 			} else {
-				$this->logSquashData(json_last_error_msg());
 				return null;
 			}
         }
@@ -116,7 +101,6 @@ class Controller_Squash_Booking extends Controller
 
 	private function areTimeSlotsValid($slotsToCheck): bool
 	{
-		if (empty($slotsToCheck)) return false;
 		$counter = 0;
 		$timeRegex = '/^([01]?[0-9]|2[0-3]):[0-5][0-9]\s-\s([01]?[0-9]|2[0-3]):[0-5][0-9]$/';
 		foreach ($slotsToCheck as $times) {
@@ -133,8 +117,9 @@ class Controller_Squash_Booking extends Controller
 
 	private function validateSlotsToCheck($dateFormat, $slotsToCheck, &$invalidParams): void
 	{
-    	if (!$this->areAllDatesValid($dateFormat, array_keys($slotsToCheck))
-		||!$this->areTimeSlotsValid($slotsToCheck)) {
+    	if (!is_array($slotsToCheck) || empty($slotsToCheck) 
+		|| !$this->areAllDatesValid($dateFormat, array_keys($slotsToCheck))
+		|| !$this->areTimeSlotsValid($slotsToCheck)) {
         	$invalidParams[] = 'slotsToCheck';
     	}
 	}
@@ -171,8 +156,8 @@ class Controller_Squash_Booking extends Controller
 
 	public function action_init_timetable(): void
 	{
-		if (!$this->isAjaxRequest()) {
-            $this->sendForbiddenResponse();
+		if (!Controller::isAjaxRequest()) {
+            Controller::sendForbiddenResponse();
         }
 		$dataFromClient = $this->getDataFromClient(['requestedDate', 'device']);
 		$this->validateDataFromClientForTimetable($dataFromClient);
@@ -182,13 +167,16 @@ class Controller_Squash_Booking extends Controller
 
 	public function action_check_timetable_slots(): void
 	{
-		if (!$this->isAjaxRequest()) {
-            $this->sendForbiddenResponse();
+		if (!Controller::isAjaxRequest()) {
+            Controller::sendForbiddenResponse();
         }
 		$dataFromClient = $this->getDataFromClient(['slotsToCheck']);
 		$this->validateDataFromClientForTimetable($dataFromClient);
-		$dataForResponse = $this->model->addTemporaryBookings($dataFromClient);
-		$this->sendJsonResponse($dataForResponse);
+		$hasBookingSucceed = $this->model->addTemporaryBookings($dataFromClient);
+		[$responseMessage, $responseCode] = $hasBookingSucceed ? 
+		["These time slots are available. You have 30 minutes to complete the payment.", 201] : 
+		["Someone had already booked these time slots.", 409];
+    	$this->sendJsonResponse($responseMessage, $responseCode);
 	}
 
 	public function action_index($params): void

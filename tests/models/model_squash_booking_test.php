@@ -19,7 +19,7 @@ class Model_Squash_Booking_Test extends TestCase
         
     }
 
-    public function weekFromDateProvider(): array
+    private function weekFromDateProvider(): array
     {
         return [
             ['01/01/2024', 'd/m/Y', ['01/01/2024', '02/01/2024', '03/01/2024', '04/01/2024', '05/01/2024', '06/01/2024', '07/01/2024']],
@@ -38,5 +38,98 @@ class Model_Squash_Booking_Test extends TestCase
         $method->setAccessible(true);
         $result = $method->invoke($this->modelSquashBooking, $requestedDate, $format);
         $this->assertEquals($expectedWeek, $result);
+    }
+
+    /*-----------------------------------------------------------------------*/
+    private function filterForSquashTimetableProvider(): array
+    {
+        return [
+            [['01/01/2024'], ['$or' => [['bookings.squash.01/01/2024' => ['$exists' => true]]]]],
+            [['02/01/2024', '03/01/2024'], ['$or' => [
+                ['bookings.squash.02/01/2024' => ['$exists' => true]],
+                ['bookings.squash.03/01/2024' => ['$exists' => true]]
+            ]]],
+            [['invalid'], ['$or' => [['bookings.squash.invalid' => ['$exists' => true]]]]],
+            [[], ['$or' => []]],
+        ];
+    }
+
+    /**
+     * @dataProvider filterForSquashTimetableProvider
+     */
+    public function testFilterForSquashTimetableBuilder($requestedDayOrWeek, $expectedFilter): void
+    {
+        $method = new ReflectionMethod(Model_Squash_Booking::class, 'buildFilterForSquashTimetable');
+        $method->setAccessible(true);
+        $result = $method->invoke($this->modelSquashBooking, $requestedDayOrWeek);
+        $this->assertEquals($expectedFilter, $result);
+    }
+
+    /*-----------------------------------------------------------------------*/
+    private function optionsForSquashTimetableProvider(): array
+    {
+        return [
+            [['01/01/2024'], ['projection' => ['bookings.squash.01/01/2024' => 1, '_id' => 0]]],
+            [['02/01/2024', '03/01/2024'], ['projection' => [
+                'bookings.squash.02/01/2024' => 1,
+                'bookings.squash.03/01/2024' => 1,
+                '_id' => 0
+            ]]],
+            [['invalid'], ['projection' => ['bookings.squash.invalid' => 1, '_id' => 0]]],
+            [[], ['projection' => ['_id' => 0]]],
+        ];
+    }
+
+    /**
+     * @dataProvider optionsForSquashTimetableProvider
+     */
+    public function testOptionsForSquashTimetableBuilder($requestedDayOrWeek, $expectedOptions): void
+    {
+        $method = new ReflectionMethod(Model_Squash_Booking::class, 'buildOptionsForSquashTimetable');
+        $method->setAccessible(true);
+        $result = $method->invoke($this->modelSquashBooking, $requestedDayOrWeek);
+        $this->assertEquals($expectedOptions, $result);
+    }
+
+    /*-----------------------------------------------------------------------*/
+    private function slotsAvailabilityFilterProvider(): array
+    {
+        return [
+            [
+                ['13/06/2023' => ["7:30 - 8:00", "11:00 - 11:30"]],
+                ['$or' => [
+                    ['bookings.squash.13/06/2023' => ['$in' => ["7:30 - 8:00", "11:00 - 11:30"]]]
+                ]]
+            ],
+            [
+                ['13/06/2023' => ["7:30 - 8:00", "11:00 - 11:30"], 
+                '14/06/2023' => ["19:30 - 20:00", "20:00 - 20:30"]],
+                ['$or' => [
+                    ['bookings.squash.13/06/2023' => ['$in' => ["7:30 - 8:00", "11:00 - 11:30"]]],
+                    ['bookings.squash.14/06/2023' => ['$in' => ["19:30 - 20:00", "20:00 - 20:30"]]]
+                ]]
+            ],
+            [
+                ['invalid' => ["invalid", "invalid"]],
+                ['$or' => [
+                    ['bookings.squash.invalid' => ['$in' => ["invalid", "invalid"]]]
+                ]]
+            ],
+            [
+                [],
+                ['$or' => []]
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider slotsAvailabilityFilterProvider
+     */
+    public function testSlotsAvailabilityFilterBuilder($slotsToCheck, $expectedFilter): void
+    {
+        $method = new ReflectionMethod(Model_Squash_Booking::class, 'buildSlotsAvailabilityFilter');
+        $method->setAccessible(true);
+        $result = $method->invoke($this->modelSquashBooking, $slotsToCheck);
+        $this->assertEquals($expectedFilter, $result);
     }
 }

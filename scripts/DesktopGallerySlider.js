@@ -25,19 +25,13 @@ class DesktopGallerySlider {
     }
 
     handleMouseEnter() {
-        this.$galleryLeftPointer.toggleClass("hovered");
-        this.$galleryRightPointer.toggleClass("hovered");
         this.$galleryLeftPointer.animate({ left: "0" }, "normal");
         this.$galleryRightPointer.animate({ right: "0" }, "normal");
     }
 
     handleMouseLeave() {
-        this.$galleryLeftPointer.animate({ left: "-1rem" }, "normal", () => {
-            this.$galleryLeftPointer.toggleClass("hovered");
-        });
-        this.$galleryRightPointer.animate({ right: "-1rem" }, "normal", () => {
-            this.$galleryRightPointer.toggleClass("hovered");
-        });
+        this.$galleryLeftPointer.animate({ left: "-1rem" }, "normal");
+        this.$galleryRightPointer.animate({ right: "-1rem" }, "normal");
     }
 
     handleLeftPointerClick() {

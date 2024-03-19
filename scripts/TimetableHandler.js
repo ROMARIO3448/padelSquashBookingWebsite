@@ -75,9 +75,10 @@ class TimetableHandler {
                 dataType: "json",
                 contentType: "application/json",
                 data: JSON.stringify({ slotsToCheck }),
-                success: (response) => {
+                success: (response, textStatus, jqXHR) => {
                     this.isAjaxInProgress = false;
-                    if (response) RedirectHandler.redirectToPaymentPage();
+                    if (jqXHR.status === 201)
+                        RedirectHandler.redirectToPaymentPage();
                 },
                 error: this.handleTimetableError.bind(this),
             });
