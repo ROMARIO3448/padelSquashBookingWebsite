@@ -2,7 +2,7 @@
 
 class Model_Squash_Booking extends Model
 {
-	private function getWeekFromDate($requestedDate, $format): array
+	private function getWeekFromDate(string $requestedDate, string $format): array
 	{
 		$requestedWeek[] = $requestedDate;
 		$date = DateTime::createFromFormat($format, $requestedDate);
@@ -13,7 +13,7 @@ class Model_Squash_Booking extends Model
 		return $requestedWeek;
 	}
 
-	private function buildFilterForSquashTimetable($requestedDayOrWeek): array
+	private function buildFilterForSquashTimetable(array $requestedDayOrWeek): array
 	{
 		$orConditions = [];
 		foreach ($requestedDayOrWeek as $date) {
@@ -22,7 +22,7 @@ class Model_Squash_Booking extends Model
 		return ['$or' => $orConditions];
 	}
 
-	private function buildOptionsForSquashTimetable($requestedDayOrWeek): array
+	private function buildOptionsForSquashTimetable(array $requestedDayOrWeek): array
 	{
 		$projection = ['_id' => 0];
 		foreach ($requestedDayOrWeek as $date) {
@@ -31,7 +31,7 @@ class Model_Squash_Booking extends Model
 		return ['projection' => $projection];
 	}
 	
-	private function getCollectionForSquashTimetable($requestedDayOrWeek, $isTemporary): MongoDB\Driver\Cursor
+	private function getCollectionForSquashTimetable(array $requestedDayOrWeek, bool $isTemporary): MongoDB\Driver\Cursor
 	{
 		$collection = $isTemporary ? Model::getSportcentrumTemporaryBookingsCollection() : Model::getSportcentrumUsersCollection();
     	$filter = $this->buildFilterForSquashTimetable($requestedDayOrWeek);
@@ -39,7 +39,7 @@ class Model_Squash_Booking extends Model
     	return $collection->find($filter, $options);
 	}
 
-	private function getAlreadyBookedSquashSlots($requestedDayOrWeek, $isTemporary = false): array
+	private function getAlreadyBookedSquashSlots(array $requestedDayOrWeek, bool $isTemporary = false): array
 	{
 		$collectionForSquashTimetable = $this->getCollectionForSquashTimetable($requestedDayOrWeek, $isTemporary);
 		$requestedDateData = array_fill_keys($requestedDayOrWeek, []);
@@ -53,7 +53,7 @@ class Model_Squash_Booking extends Model
 		return $requestedDateData;
 	}
 
-	public function getSquashTimetable($options): array
+	public function getSquashTimetable(array $options): array
 	{
 		$requestedDate = $options['requestedDate'];
 		$device = $options['device'];
@@ -61,7 +61,7 @@ class Model_Squash_Booking extends Model
 		return array_merge_recursive($this->getAlreadyBookedSquashSlots($requestedDayOrWeek), $this->getAlreadyBookedSquashSlots($requestedDayOrWeek, true));
 	}
 
-	private function buildSlotsAvailabilityFilter($slotsToCheck): array
+	private function buildSlotsAvailabilityFilter(array $slotsToCheck): array
     {
         $orConditions = [];
         foreach ($slotsToCheck as $date => $times) {
@@ -70,20 +70,20 @@ class Model_Squash_Booking extends Model
         return ['$or' => $orConditions];
     }
 
-    private function getFilteredDocumentsCount($filter, $isTemporary = false): int
+    private function getFilteredDocumentsCount(array $filter, bool $isTemporary = false): int
     {
         $collection = $isTemporary ? Model::getSportcentrumTemporaryBookingsCollection() : Model::getSportcentrumUsersCollection();
         return $collection->countDocuments($filter);
     }
 
-	private function areSlotsAvailable($slotsToCheck): bool
+	private function areSlotsAvailable(array $slotsToCheck): bool
     {
         $filter = $this->buildSlotsAvailabilityFilter($slotsToCheck);
         $count = $this->getFilteredDocumentsCount($filter) + $this->getFilteredDocumentsCount($filter, true);
         return $count === 0;
     }
 
-	private function insertTemporaryBookings($slotsToCheck): ?MongoDB\InsertOneResult
+	private function insertTemporaryBookings(array $slotsToCheck): ?MongoDB\InsertOneResult
     {
 		try {
 			$temporarybookings = Model::getSportcentrumTemporaryBookingsCollection();
@@ -99,7 +99,7 @@ class Model_Squash_Booking extends Model
 		}
     }
 
-	private function storeTempDataInSession($slotsToCheck): void
+	private function storeTempDataInSession(array $slotsToCheck): void
 	{
 		session_start();
 		$tempUserId = uniqid('tempUser_', true);
@@ -108,7 +108,7 @@ class Model_Squash_Booking extends Model
 		session_write_close();
 	}
 
-	public function addTemporaryBookings($options): bool
+	public function addTemporaryBookings(array $options): bool
     {
         $slotsToCheck = $options['slotsToCheck'];
 		if($this->areSlotsAvailable($slotsToCheck))
@@ -122,7 +122,7 @@ class Model_Squash_Booking extends Model
 		return false;
     }
 
-	public function get_data($options): void
+	public function get_data(array $options): void
 	{
     }
 }

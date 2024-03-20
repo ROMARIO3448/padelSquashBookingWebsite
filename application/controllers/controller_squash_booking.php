@@ -8,7 +8,7 @@ class Controller_Squash_Booking extends Controller
 		$this->view = new View();
 	}
 
-	private function sendJsonResponse($dataForResponse, $responseCode = 200): void
+	private function sendJsonResponse(mixed $dataForResponse, int $responseCode = 200): void
     {
         header("Content-Type: application/json");
 		http_response_code($responseCode);
@@ -16,7 +16,7 @@ class Controller_Squash_Booking extends Controller
         exit();
     }
 	
-	private function sendBadRequestJsonResponse($missingParams = [], $invalidParams = []): void
+	private function sendBadRequestJsonResponse(array $missingParams = [], array $invalidParams = []): void
 	{
 		header("Content-Type: application/json");
     	http_response_code(400);
@@ -35,7 +35,7 @@ class Controller_Squash_Booking extends Controller
     	exit();
 	}
 
-	private function getRawDataFromClient($paramName): mixed
+	private function getRawDataFromClient(string $paramName): mixed
 	{
 		$dataFromClient = $_GET[$paramName] ?? $_POST[$paramName] ?? null;
 		if (empty($dataFromClient)) {
@@ -50,7 +50,7 @@ class Controller_Squash_Booking extends Controller
 		return $dataFromClient;
 	}
 
-	private function getDataFromClient($expectedParams): array
+	private function getDataFromClient(array $expectedParams): array
 	{
 		$missingParams = [];
 		$dataFromClient = [];
@@ -72,7 +72,7 @@ class Controller_Squash_Booking extends Controller
 		return $dataFromClient;
 	}
 
-	private function isRequestedDateNotPastAndDateFormatValid($dateFormat, $requestedDate): bool
+	private function isRequestedDateNotPastAndDateFormatValid(string $dateFormat, string $requestedDate): bool
 	{
 		$currentDateObject = DateTime::createFromFormat($dateFormat, (new DateTime())->format($dateFormat));
 		$requestedDateObject = DateTime::createFromFormat($dateFormat, $requestedDate);
@@ -84,7 +84,7 @@ class Controller_Squash_Booking extends Controller
 		return false;
 	}
 
-	private function areAllDatesValid($dateFormat, $dates): bool
+	private function areAllDatesValid(string $dateFormat, array $dates): bool
 	{
 		foreach ($dates as $date) {
 			if (!$this->isRequestedDateNotPastAndDateFormatValid($dateFormat, $date)) {
@@ -94,12 +94,12 @@ class Controller_Squash_Booking extends Controller
 		return true;
 	}
 
-	private function isDeviceStringValid($deviceString): bool
+	private function isDeviceStringValid(string $deviceString): bool
 	{
 		return ($deviceString === "mobile" || $deviceString === "desktop") ? true : false;
 	}
 
-	private function areTimeSlotsValid($slotsToCheck): bool
+	private function areTimeSlotsValid(array $slotsToCheck): bool
 	{
 		$counter = 0;
 		$timeRegex = '/^([01]?[0-9]|2[0-3]):[0-5][0-9]\s-\s([01]?[0-9]|2[0-3]):[0-5][0-9]$/';
@@ -115,7 +115,7 @@ class Controller_Squash_Booking extends Controller
 		return true;
 	}
 
-	private function validateSlotsToCheck($dateFormat, $slotsToCheck, &$invalidParams): void
+	private function validateSlotsToCheck(string $dateFormat, array $slotsToCheck, array &$invalidParams): void
 	{
     	if (!is_array($slotsToCheck) || empty($slotsToCheck) 
 		|| !$this->areAllDatesValid($dateFormat, array_keys($slotsToCheck))
@@ -124,21 +124,21 @@ class Controller_Squash_Booking extends Controller
     	}
 	}
 
-	private function validateRequestedDate($dateFormat, $requestedDate, &$invalidParams): void
+	private function validateRequestedDate(string $dateFormat, string $requestedDate, array &$invalidParams): void
 	{
     	if (!$this->isRequestedDateNotPastAndDateFormatValid($dateFormat, $requestedDate)) {
         	$invalidParams[] = 'requestedDate';
     	}
 	}
 
-	private function validateDevice($device, &$invalidParams): void
+	private function validateDevice(string $device, array &$invalidParams): void
 	{
     	if (!$this->isDeviceStringValid($device)) {
         	$invalidParams[] = 'device';
     	}
 	}
 
-	private function validateDataFromClientForTimetable($dataFromClient): void
+	private function validateDataFromClientForTimetable(array $dataFromClient): void
 	{
 		$invalidParams = [];
 		$dateFormat = 'd/m/Y';

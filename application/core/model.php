@@ -21,7 +21,7 @@ class Model
         return self::getClient()->sportcentrum->temporarybookings;
     }
     
-    public function get_data($options)
+    public function get_data(array $options)
     {
     }
 }

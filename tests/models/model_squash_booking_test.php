@@ -32,7 +32,7 @@ class Model_Squash_Booking_Test extends TestCase
     /**
      * @dataProvider weekFromDateProvider
      */
-    public function testGetWeekFromDate($requestedDate, $format, $expectedWeek): void
+    public function testGetWeekFromDate(string $requestedDate, string $format, array $expectedWeek): void
     {
         $method = new ReflectionMethod(Model_Squash_Booking::class, 'getWeekFromDate');
         $method->setAccessible(true);
@@ -57,7 +57,7 @@ class Model_Squash_Booking_Test extends TestCase
     /**
      * @dataProvider filterForSquashTimetableProvider
      */
-    public function testFilterForSquashTimetableBuilder($requestedDayOrWeek, $expectedFilter): void
+    public function testFilterForSquashTimetableBuilder(array $requestedDayOrWeek, array $expectedFilter): void
     {
         $method = new ReflectionMethod(Model_Squash_Booking::class, 'buildFilterForSquashTimetable');
         $method->setAccessible(true);
@@ -83,7 +83,7 @@ class Model_Squash_Booking_Test extends TestCase
     /**
      * @dataProvider optionsForSquashTimetableProvider
      */
-    public function testOptionsForSquashTimetableBuilder($requestedDayOrWeek, $expectedOptions): void
+    public function testOptionsForSquashTimetableBuilder(array $requestedDayOrWeek, array $expectedOptions): void
     {
         $method = new ReflectionMethod(Model_Squash_Booking::class, 'buildOptionsForSquashTimetable');
         $method->setAccessible(true);
@@ -125,7 +125,7 @@ class Model_Squash_Booking_Test extends TestCase
     /**
      * @dataProvider slotsAvailabilityFilterProvider
      */
-    public function testSlotsAvailabilityFilterBuilder($slotsToCheck, $expectedFilter): void
+    public function testSlotsAvailabilityFilterBuilder(array $slotsToCheck, array $expectedFilter): void
     {
         $method = new ReflectionMethod(Model_Squash_Booking::class, 'buildSlotsAvailabilityFilter');
         $method->setAccessible(true);
