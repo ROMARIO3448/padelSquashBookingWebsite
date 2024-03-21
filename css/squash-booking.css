@@ -1,103 +1,142 @@
-._container {
-    padding-left: 0;
-    padding-right: 0;
+:root {
+    --mobile-gallery-min-height: 240px;
+    --mobile-gallery-prefer-height: 60vw;
+    --mobile-gallery-max-height: 595.2px;
+    --gallery-heights: clamp(
+        var(--mobile-gallery-min-height),
+        var(--mobile-gallery-prefer-height),
+        var(--mobile-gallery-max-height)
+    );
+    --almost-white-color-for-bg: rgb(249, 249, 249);
+    --color-for-disabled-text: rgb(175, 175, 175);
+    --color-for-active-timetable-elem: rgb(67, 188, 155);
+    --color-for-timetable-book-action: rgb(255, 233, 193);
 }
-
-.squash-booking__preview {
+/*------------------------------------------------------*/
+/*---------------------PREVIEW--------------------------*/
+/*------------------------------------------------------*/
+.main__preview {
+}
+.preview__container {
     display: grid;
-    grid-template-columns: 100vw;
-    grid-template-rows: 10em 2em 6em;
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--gallery-heights) 2rem 8rem;
     grid-template-areas:
         "gallery"
         "title"
         "included";
-    line-height: 2em;
+    line-height: 2rem;
 }
+@media (min-width: 992px) {
+    .preview__container {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: 2rem 2rem 397px;
+        grid-template-areas:
+            "title title title"
+            "controls controls controls"
+            "gallery gallery included";
+    }
+}
+
 /*------------------------------preview__title----------------------------*/
 .preview__title {
     grid-area: title;
-    font-size: 0.9em;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    line-height: 2em;
-    border-bottom: 1px var(--main-bg-color) solid;
+    border-bottom: 1px var(--frame-bg-color) solid;
+}
+.preview__title > :first-child {
+    padding-left: 1rem;
+}
+.preview__title > :last-child {
+    padding-right: 1rem;
 }
 .preview__title h1 {
-    margin-left: 1em;
+    font-weight: 500;
+    white-space: nowrap;
+    font-size: 0.8rem;
+}
+@media (min-width: 576px) {
+    .preview__title h1 {
+        font-size: 0.9rem;
+    }
+}
+@media (min-width: 768px) {
+    .preview__title h1 {
+        font-size: 1rem;
+    }
 }
 .preview__rating {
-    margin-right: 1em;
-}
-.preview__rating ul {
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 .preview__rating img {
-    margin-top: 0.5em;
-    height: 1em;
+    height: 0.9rem;
 }
+
 /*----------------------preview__controls--------------------------*/
 .preview__controls {
+    display: none;
     grid-area: controls;
-    font-size: 0.5em;
-    display: flex;
     flex-direction: row;
     justify-content: space-between;
+    font-size: 0.5rem;
+}
+@media (min-width: 992px) {
+    .preview__controls {
+        display: flex;
+    }
+}
+.preview__controls > :first-child {
+    padding-left: 0.5rem;
+}
+.preview__controls > :last-child {
+    padding-right: 0.5rem;
+}
+.preview__controls > * {
+    display: flex;
+    flex-direction: row;
     align-items: center;
-    line-height: 2em;
+    gap: 0.4rem;
 }
-.control__google-geo {
-    margin-left: 0.5em;
-}
-.control__google-geo a {
-    display: flex;
-    flex-direction: row;
-    gap: 0.3em;
-}
-.control__opening-time {
-}
-.control__opening-time a {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5em;
+.preview__controls img {
+    height: 1rem;
 }
 .control__share {
     position: relative;
     cursor: pointer;
-    margin-right: 0.5em;
 }
-.control__share img:hover + .control__share-tooltip {
-    display: block;
+/*share-tooltip*/
+@media (hover: hover) {
+    .control__share img:hover + .control__share-tooltip {
+        display: block;
+    }
 }
 .control__share-tooltip {
     display: none;
     position: absolute;
     background-color: black;
-    color: var(--main-text-color);
-    top: 0;
-    left: -3.5em;
-    white-space: nowrap;
-    width: 3em;
-    height: 2em;
-    line-height: 2em;
+    color: white;
+    inset: 25% 125% auto auto; /*top: 25%; right: 125%;*/
     text-align: center;
-    border-radius: 0.3em;
+    width: 2rem;
+    height: 1rem;
+    line-height: 1rem;
+    border-radius: 0.3rem;
     opacity: 0.7;
 }
+/*I took it from https://css-tricks.com/snippets/css/css-triangle/*/
 .control__share-tooltip::after {
     content: "";
     position: absolute;
-    top: 50%;
-    right: -0.8em;
-    transform: translateY(-50%);
-    border-width: 0.5em;
-    border-style: solid;
-    border-color: transparent transparent transparent black;
+    inset: 25% auto auto 100%; /*top: 25%; left: 100%;*/
+    border-top: 0.25rem solid transparent;
+    border-bottom: 0.25rem solid transparent;
+    border-left: 0.25rem solid black;
 }
-.preview__controls img {
-    height: 2em;
-}
+
 /*---------------------preview__gallery----------------------*/
 .preview__gallery {
     grid-area: gallery;
@@ -107,192 +146,330 @@
 .gallery::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0 auto auto 0; /*top: 0; left: 0;*/
     width: 100%;
     height: 100%;
     background-image: url("/padelSquashBookingWebsite/assets/loader.gif");
     background-repeat: no-repeat;
     background-position: 50% 50%;
-    background-size: 2em;
+    background-size: 2rem;
     z-index: -1;
 }
-.gallery__main {
+.gallery__image {
+    position: absolute;
     height: 100%;
     width: 100%;
-    position: absolute;
+}
+.animate-transition {
+    transition: left 0.3s ease-in-out;
+}
+#gallery__main {
     left: 0;
 }
-.gallery__prev {
-    height: 100%;
-    width: 100%;
-    position: absolute;
+#gallery__prev {
     left: -100%;
 }
-.gallery__next {
-    height: 100%;
-    width: 100%;
-    position: absolute;
+#gallery__next {
     left: 100%;
 }
-.gallery__left-pointer,
-.gallery__right-pointer,
-.gallery__price-hint {
+.gallery__indicator {
     display: none;
+}
+@media (hover: hover) {
+    .gallery__indicator {
+        display: block;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    #gallery__left-pointer,
+    #gallery__right-pointer {
+        opacity: 0.5;
+        height: 2rem;
+    }
+    #gallery__left-pointer {
+        left: -1rem;
+    }
+    #gallery__right-pointer {
+        right: -1rem;
+    }
+    #gallery__left-pointer:hover,
+    #gallery__right-pointer:hover {
+        opacity: 0.7;
+    }
+    #gallery__price-hint {
+        height: 4rem;
+        inset: 0 auto auto 15%; /*left: 15%; top: 0;*/
+        transform: translateX(-50%);
+        opacity: 0.7;
+    }
 }
 /*---------------------preview__included--------------------------*/
 .preview__included {
     grid-area: included;
-    font-size: 0.5em;
+    font-size: 0.7rem;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    line-height: 2em;
-    padding: 2em;
+    justify-content: start;
 }
-
-.preview__included div {
+.preview__included > * {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+.preview__included div:not(.equipment__tooltip) {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+    gap: 1rem;
+    flex-grow: 1;
 }
-
-.preview__included div div {
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
+.preview__included > div > :last-child {
+    display: none;
 }
-
-.preview__included img {
-    height: 2em;
-}
-
-/* Tablet Styles - 600px and above */
-@media (min-width: 600px) {
-    .squash-booking__preview {
-        grid-template-rows: 12em 2.5em 8em;
-    }
-    .preview__title {
-        font-size: 1em;
-        line-height: 2.2em;
-    }
-}
-
-/* Small Laptops and Tablets - 768px and above */
-@media (min-width: 768px) {
-    .squash-booking__preview {
-        grid-template-rows: 15em 3em 11em;
-    }
-    .preview__title {
-        font-size: 1.4em;
-        line-height: 2em;
-    }
-}
-
-/* Laptops and Desktops - 992px and above */
 @media (min-width: 992px) {
-    ._container {
-        padding-left: 9.5vw;
-        padding-right: 9.5vw;
+    .preview__included {
+        font-size: 0.5rem;
     }
-    .squash-booking__preview {
-        grid-template-columns: 27vw 27vw 27vw;
-        grid-template-rows: 2em 2em 15em;
-        grid-template-areas:
-            "title title title"
-            "controls controls controls"
-            "gallery gallery included";
-    }
-    .preview__rating img {
-        margin-top: 0.2em;
-        height: 0.8em;
-    }
-    .preview__title {
-        line-height: 1.4em;
-    }
-    /*---------------------preview__gallery----------------------*/
-    .gallery__left-pointer,
-    .gallery__right-pointer,
-    .gallery__price-hint {
-        position: absolute;
-        top: 50%;
-        opacity: 0.5;
-        transform: translateY(-50%);
-    }
-    .gallery__left-pointer {
-        height: 2em;
-        left: -1em;
-    }
-    .gallery__left-pointer:hover {
-        opacity: 0.7;
-    }
-    .gallery__right-pointer {
-        height: 2em;
-        right: -1em;
-    }
-    .gallery__right-pointer:hover {
-        opacity: 0.7;
-    }
-    .gallery__price-hint {
+    .preview__included > div > :last-child {
         display: block;
-        height: 4em;
-        left: 15%;
-        top: 0;
-        transform: translateX(-50%);
-        opacity: 0.7;
     }
-    .gallery__left-pointer.hovered,
-    .gallery__right-pointer.hovered {
+    .preview__included div:not(.equipment__tooltip) {
+        flex-grow: 0;
+    }
+}
+.preview__included img {
+    height: 1rem;
+}
+.equipment__tooltip {
+    position: relative;
+    cursor: pointer;
+    color: red;
+}
+@media (hover: hover) {
+    .equipment__tooltip:hover > ul {
         display: block;
     }
 }
-
-/* Large Screens - 1200px and above */
-@media (min-width: 1200px) {
-    ._container {
-        padding-left: 14vw;
-        padding-right: 14vw;
-    }
-    .squash-booking__preview {
-        grid-template-columns: 24vw 24vw 24vw;
-        grid-template-rows: 1.8em 1.8em 13.5em;
-        grid-template-areas:
-            "title title title"
-            "controls controls controls"
-            "gallery gallery included";
-        line-height: 2em;
-    }
-    .preview__title {
-        font-size: 0.9em;
-        line-height: 1.8em;
-    }
-    .preview__controls {
-        font-size: 0.55em;
-    }
-    .preview__rating img {
-        margin-top: 0.5em;
-    }
+.equipment__tooltip ul {
+    display: none;
+    position: absolute;
+    inset: 70% 0 auto auto; /*top: 70%; right: 0;*/
+    background-color: white;
+    color: black;
+    padding: 0.1rem;
+    font-size: 0.4rem;
+    font-weight: bold;
+    width: auto;
+    height: auto;
+    line-height: 130%;
+    border-radius: 0.1rem;
+    box-shadow: 0 0 0.3rem rgba(0, 0, 0, 0.5);
 }
 
-/* Very Large Screens - 1600px and above */
-@media (min-width: 1600px) {
-    ._container {
-        padding-left: 24.5vw;
-        padding-right: 24.5vw;
+/*--------------------------------------------------------*/
+/*---------------------TIMETABLE--------------------------*/
+/*--------------------------------------------------------*/
+.main__timetable {
+    background-color: var(--almost-white-color-for-bg);
+}
+.timetable__container {
+    font-size: 0.9rem;
+    padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+/*---------------------timetable__book-action--------------------------*/
+.timetable__book-action {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.timetable__book-action > div {
+    white-space: nowrap;
+    text-align: center;
+    padding: 0.3rem 0.5rem;
+    margin: 0 1rem;
+}
+.timetable__book-action > div:first-child {
+    display: flex;
+    justify-content: space-between;
+}
+.timetable__book-action > div:first-child > span {
+    color: red;
+}
+.timetable__book-action > div:last-child {
+    background-color: var(--frame-bg-color);
+    margin-right: 1rem;
+    color: white;
+    border-radius: 0.2rem;
+    opacity: 0.5;
+}
+.timetable__book-action > div:last-child.active {
+    opacity: 1;
+    cursor: pointer;
+}
+.timetable__book-action img {
+    height: 0.9rem;
+}
+@media (min-width: 992px) {
+    .timetable__book-action {
+        font-size: 0.5rem;
+        flex-direction: row;
+        justify-content: space-between;
     }
-    .squash-booking__preview {
-        grid-template-columns: 17vw 17vw 17vw;
-        grid-template-rows: 1.5em 1.5em 10em;
-        line-height: 1.5em;
+    .timetable__book-action > div:first-child {
+        padding: 0.3rem 0.5rem;
+        margin-left: 1rem;
+        background-color: var(--color-for-timetable-book-action);
     }
-    .preview__title {
-        font-size: 0.8em;
-        line-height: 1.9em;
+    .timetable__book-action > div:first-child > span {
+        display: none;
     }
-    .preview__controls {
-        font-size: 0.5em;
+    .timetable__book-action > div:first-child > div img {
+        display: none;
     }
-    .preview__rating img {
-        margin-top: 0.4em;
+    .timetable__book-action > div:last-child {
+        margin-right: 1rem;
+        padding: 0.3rem 2rem;
     }
+}
+/*---------------------timetable__opening-hours--------------------------*/
+.timetable__opening-hours {
+    display: flex;
+    gap: 0.5rem;
+}
+.timetable__opening-hours ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-grow: 1;
+    flex-basis: 100%;
+}
+.timetable__opening-hours ul li {
+    display: flex;
+    justify-content: space-between;
+    white-space: nowrap;
+    margin: 0 1.5rem;
+    padding: 0 1rem;
+    border: 1px black solid;
+    border-radius: 0.3rem;
+    line-height: 2rem;
+    height: 2rem;
+}
+.timetable__opening-hours ul li:first-child {
+    font-size: 0.7rem;
+    border: none;
+    margin: 0 0.5rem;
+    padding: 0;
+    overflow: hidden;
+}
+.timetable__opening-hours ul:first-child li:first-child div {
+    display: flex;
+    align-items: center;
+    padding: 0 0.3rem;
+}
+.timetable__opening-hours
+    ul:first-child
+    li:first-child
+    div:is(:first-child, :last-child) {
+    color: red;
+    gap: 0.3rem;
+}
+.timetable__opening-hours ul:first-child li:first-child div:nth-child(2) {
+    font-size: 0.55rem;
+    margin: 0.3rem 0;
+    border: 1px black solid;
+    /*↓ It is necessary for datepicker positioning*/
+    padding: 0 0.3rem 0 0;
+}
+.timetable__opening-hours ul:first-child li:first-child div:nth-child(2) input {
+    background-color: inherit;
+    font-size: inherit;
+    width: 3.4rem;
+    height: 100%;
+    /*↓ It is necessary for datepicker positioning*/
+    padding: 0 0 0 0.3rem;
+}
+.timetable__arrow-pointer {
+    font-weight: 600;
+    transform: scaleY(3);
+}
+.timetable__opening-hours ul:first-child li:first-child div img {
+    height: 0.7rem;
+}
+@media (min-width: 992px) {
+    .timetable__container {
+        font-size: 0.4rem;
+    }
+    .timetable__opening-hours ul {
+        flex-grow: 0;
+    }
+    .timetable__opening-hours ul:is(:first-child, :last-child) li {
+        border: none;
+    }
+    .timetable__opening-hours
+        ul:is(:first-child, :last-child)
+        li:nth-child(even) {
+        font-size: 0.35rem;
+        color: gray;
+    }
+    .timetable__opening-hours ul li {
+        justify-content: center;
+        gap: 0.2rem;
+        line-height: 0.7rem;
+        height: 0.7rem;
+        margin: 0;
+        padding: 0 0.3rem;
+        border-radius: 0.1rem;
+    }
+    .timetable__opening-hours
+        ul
+        li:not(:first-child):not(.disabled)
+        > :first-child {
+        display: none;
+    }
+    .timetable__opening-hours
+        ul
+        li:not(:first-child):not(.disabled).touched
+        > :first-child {
+        display: inline;
+    }
+    .timetable__opening-hours ul li:first-child {
+        font-size: inherit;
+        font-weight: bolder;
+    }
+    .timetable__opening-hours ul:is(:first-child, :last-child) li:first-child {
+    }
+    .timetable__arrow-pointer {
+        cursor: pointer;
+        transform: scaleY(2.5);
+    }
+}
+@media (hover: hover) {
+    .timetable__opening-hours
+        ul:not(:first-child):not(:last-child)
+        li:not(:first-child):not(.disabled):hover {
+        cursor: pointer;
+        background-color: var(--color-for-active-timetable-elem);
+        color: white;
+    }
+    .timetable__opening-hours ul:is(:first-child, :last-child) li:hover {
+        color: black;
+        font-weight: bolder;
+    }
+}
+.timetable__opening-hours ul li:not(:first-child):not(.disabled).touched {
+    background-color: var(--color-for-active-timetable-elem);
+    color: white;
+}
+.timetable__opening-hours .disabled {
+    border: none;
+    color: var(--color-for-disabled-text);
+}
+/*jQuery UI datepicker styles*/
+#ui-datepicker-div {
+    font-size: 0.6rem;
 }

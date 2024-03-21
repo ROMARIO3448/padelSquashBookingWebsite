@@ -1,8 +1,8 @@
 <?php
-class Controller {
-	
-	public $model;
-	public $view;
+class Controller 
+{
+	protected $model;
+	protected $view;
 	
 	function __construct()
 	{

@@ -10,8 +10,18 @@ class Model
         }
         return self::$client;
     }
+
+    protected static function getSportcentrumUsersCollection()
+    {
+        return self::getClient()->sportcentrum->sportcentrumusers;
+    }
+
+    protected static function getSportcentrumTemporaryBookingsCollection()
+    {
+        return self::getClient()->sportcentrum->temporarybookings;
+    }
     
-    public function get_data($options)
+    public function get_data(array $options)
     {
     }
 }

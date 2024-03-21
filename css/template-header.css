@@ -2,75 +2,77 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
+    width: 100%;
     z-index: 50;
 
-    background-color: var(--main-bg-color);
-    color: var(--main-text-color);
+    background-color: var(--frame-bg-color);
+    color: var(--frame-text-color);
+}
+
+.header-template__container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    height: 2em;
-    line-height: 2em;
+    height: 2rem;
+    line-height: 2rem;
 }
 
+/*-------------------------------------------------------*/
 .header-template__logo {
-    display: flex;
-    margin-left: 1em;
+    display: block;
 }
 
 .header-template__logo img {
-    height: 2em;
-    transform: rotate(-50deg);
+    padding: 0.2rem;
+    height: 2rem;
 }
 
+/*-------------------------------------------------------*/
 .header-template__menu {
     display: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
-.header-template__menu ul {
+.menu__list {
     display: flex;
     flex-direction: column;
 }
 
-/*.current is the style that will be applied to the elements of 
-.header-template__menu ul if the URI matches the href of the link*/
-.menu__home.current,
-.menu__courts.current,
-.menu__about-us.current,
-.menu__contact.current {
+.menu__item.current {
     color: red;
 }
 
+/*-------------------------------------------------------*/
 .header-template__actions {
     display: none;
-    margin-right: 1em;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
-.header-template__actions ul {
+.action__list {
     display: flex;
     flex-direction: column;
 }
 
+/*-------------------------------------------------------*/
 .header-template__burger {
-    cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-self: center;
-    width: 1.5em;
-    height: 1em;
-    margin-right: 1em;
+    width: 1.4rem;
+    height: 1rem;
+    cursor: pointer;
 }
 
 .header-template__burger span {
     background-color: #fff;
-    height: 0.15em;
-    width: 1.5em;
+    height: calc(100% / 5);
+    width: 100%;
 }
 
-/*.active is the style that will be applied when the burger menu is clicked 
-if the screen size is not wider than 992 pixels*/
+/*-------------------------------------------------------*/
 .header-template.active {
     height: 100vh;
 }
@@ -85,43 +87,43 @@ if the screen size is not wider than 992 pixels*/
 }
 .header-template__burger.active span:nth-child(1) {
     transform: rotate(-45deg);
-    margin-top: 0.9em;
+    margin-top: 0.85rem;
 }
 .header-template__burger.active span:nth-child(3) {
     transform: rotate(45deg);
-    margin-top: -0.9em;
+    margin-top: -0.85rem;
 }
 .header-template__menu.active {
     display: block;
-    margin-left: 1em;
 }
 .header-template__actions.active {
     display: block;
-    margin-right: 0;
 }
 
-/* Laptops and Desktops - 992px and above */
+/*-------------------------------------------------------*/
 @media (min-width: 992px) {
+    .header-template__container {
+        justify-content: start;
+        gap: 1.5rem;
+    }
     .header-template__menu {
         display: block;
+        margin-right: auto;
     }
-    .header-template__menu ul {
+    .menu__list {
         flex-direction: row;
-        gap: 1em;
+        gap: 0.5rem;
     }
-    .menu__home.current,
-    .menu__courts.current,
-    .menu__about-us.current,
-    .menu__contact.current {
+    .menu__item.current {
         color: #fff;
-        box-shadow: inset 0 0.2em 0 white;
+        box-shadow: inset 0 0.2rem 0 white;
     }
     .header-template__actions {
         display: block;
     }
-    .header-template__actions ul {
+    .action__list {
         flex-direction: row;
-        gap: 1em;
+        gap: 0.5rem;
     }
     .header-template__burger {
         display: none;

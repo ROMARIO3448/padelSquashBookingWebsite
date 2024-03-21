@@ -1,20 +1,34 @@
 <?php
 echo '
-    <header class="header-template">
-        <a href="#" class="header-template__logo">
-            <img src="/padelSquashBookingWebsite/assets/logo_example.png" alt="Example logo" />
+<header class="header-template">
+    <div class="header-template__container _wide-container">
+        <a href="" class="header-template__logo">
+            <img
+                src="/padelSquashBookingWebsite/assets/logo_example.png"
+                alt="Example logo image"
+            />
         </a>
         <nav class="header-template__menu menu">
-            <ul>
-                <li class="menu__home"><a href="#">Home</a></li>
-                <li class="menu__courts"><a href="#">Courts</a></li>
-                <li class="menu__about-us"><a href="#">About Us</a></li>
-                <li class="menu__contact"><a href="#">Contact</a></li>
+            <ul class="menu__list">
+                <li id="menu__home" class="menu__item">
+                    <a href="">HOME</a>
+                </li>
+                <li id="menu__courts" class="menu__item">
+                    <a href="">COURTS</a>
+                </li>
+                <li id="menu__about-us" class="menu__item">
+                    <a href="">ABOUT US</a>
+                </li>
+                <li id="menu__contact" class="menu__item">
+                    <a href="">CONTACT</a>
+                </li>
             </ul>
         </nav>
         <div class="header-template__actions action">
-            <ul>
-                <li class="action__sign-in"><a href="#">Sign in</a></li>
+            <ul class="action__list">
+                <li id="action__sign-in" class="action__item">
+                    <a href="">SIGN IN</a>
+                </li>
             </ul>
         </div>
         <div class="header-template__burger">
@@ -22,5 +36,6 @@ echo '
             <span></span>
             <span></span>
         </div>
-    </header>
+    </div>
+</header>
 ';
