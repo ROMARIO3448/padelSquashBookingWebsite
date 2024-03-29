@@ -1,6 +1,7 @@
 {
     "require": {
         "mongodb/mongodb": "^1.17",
-        "phpunit/phpunit": "^9.0"
+        "phpunit/phpunit": "^9.0",
+        "phpmailer/phpmailer": "^6.9"
     }
 }

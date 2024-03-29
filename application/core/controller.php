@@ -9,12 +9,12 @@ class Controller
 		$this->view = new View();
 	}
 
-	protected static function isAjaxRequest()
+	protected static function isAjaxRequest(): bool
     {
         return isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
 	
-	protected static function sendForbiddenResponse()
+	protected static function sendForbiddenResponse(): void
     {
         http_response_code(403);
         exit();

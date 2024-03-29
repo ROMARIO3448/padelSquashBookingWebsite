@@ -31,12 +31,12 @@ class Model_Squash_Booking extends Model
 		return ['projection' => $projection];
 	}
 	
-	private function getCollectionForSquashTimetable(array $requestedDayOrWeek, bool $isTemporary): MongoDB\Driver\Cursor
+	private function getCollectionForSquashTimetable(array $requestedDayOrWeek, bool $isTemporary): ?MongoDB\Driver\Cursor
 	{
 		$collection = $isTemporary ? Model::getSportcentrumTemporaryBookingsCollection() : Model::getSportcentrumUsersCollection();
     	$filter = $this->buildFilterForSquashTimetable($requestedDayOrWeek);
     	$options = $this->buildOptionsForSquashTimetable($requestedDayOrWeek);
-    	return $collection->find($filter, $options);
+		return Model::findDocumentsInCollection($collection, $filter, $options);
 	}
 
 	private function getAlreadyBookedSquashSlots(array $requestedDayOrWeek, bool $isTemporary = false): array
@@ -70,10 +70,10 @@ class Model_Squash_Booking extends Model
         return ['$or' => $orConditions];
     }
 
-    private function getFilteredDocumentsCount(array $filter, bool $isTemporary = false): int
+    private function getFilteredDocumentsCount(array $filter, bool $isTemporary = false): ?int
     {
         $collection = $isTemporary ? Model::getSportcentrumTemporaryBookingsCollection() : Model::getSportcentrumUsersCollection();
-        return $collection->countDocuments($filter);
+        return Model::countDocumentsInCollection($collection, $filter);
     }
 
 	private function areSlotsAvailable(array $slotsToCheck): bool
@@ -85,18 +85,13 @@ class Model_Squash_Booking extends Model
 
 	private function insertTemporaryBookings(array $slotsToCheck): ?MongoDB\InsertOneResult
     {
-		try {
-			$temporarybookings = Model::getSportcentrumTemporaryBookingsCollection();
-			$document = [
-				'_id' => new MongoDB\BSON\ObjectID(),
-				'createdAt' => new MongoDB\BSON\UTCDateTime(),
-				'bookings' => ['squash' => $slotsToCheck]
-			];
-			$result = $temporarybookings->insertOne($document);
-			return $result;
-		} catch (MongoDB\Driver\Exception\Exception $e) {
-			return null;
-		}
+		$temporarybookings = Model::getSportcentrumTemporaryBookingsCollection();
+		$document = [
+			'_id' => new MongoDB\BSON\ObjectID(),
+			'createdAt' => new MongoDB\BSON\UTCDateTime(),
+			'bookings' => ['squash' => $slotsToCheck]
+		];
+		return Model::insertOneInCollection($temporarybookings, $document);
     }
 
 	private function storeTempDataInSession(array $slotsToCheck): void

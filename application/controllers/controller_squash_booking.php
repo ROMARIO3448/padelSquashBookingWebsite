@@ -4,8 +4,8 @@ class Controller_Squash_Booking extends Controller
 {
 	function __construct()
 	{
+		parent::__construct();
 		$this->model = new Model_Squash_Booking();
-		$this->view = new View();
 	}
 
 	private function sendJsonResponse(mixed $dataForResponse, int $responseCode = 200): void
